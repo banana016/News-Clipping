@@ -1,0 +1,104 @@
+{
+  "_note": "테스트용 가상 데이터 — Phase 2 테스트 리포트와 동일한 20건. selector/weights 회귀 테스트 fixture.",
+  "evaluations": [
+    {"id":"a1","title":"OO뷰티, 저가 이미지 벗고 클린뷰티로 재포지셔닝","tags":["브랜드전략","포지셔닝","뷰티"],
+     "strategic_relevance":22,"stp_4p_relevance":19,"practical_applicability":16,"market_impact":8,"recency":8,"credibility":3,
+     "title_has_strategy_phrase":false,"stp_specific":true,"product_specific":true,"price_specific":false,"place_specific":false,"promotion_specific":false,
+     "is_duplicate":false,"duplicate_of":null,"is_ad":false,"reject_reason":null},
+
+    {"id":"a4","title":"C코스메틱, 2030 남성 시장으로 표적 확장","tags":["표적시장","시장세분화","뷰티"],
+     "strategic_relevance":20,"stp_4p_relevance":17,"practical_applicability":14,"market_impact":7,"recency":6,"credibility":2,
+     "title_has_strategy_phrase":false,"stp_specific":true,"product_specific":true,"price_specific":false,"place_specific":true,"promotion_specific":false,
+     "is_duplicate":false,"duplicate_of":null,"is_ad":false,"reject_reason":null},
+
+    {"id":"a2","title":"A이커머스, 지방 소상공인 전용 입점 프로그램 신설","tags":["유통전략","이커머스"],
+     "strategic_relevance":21,"stp_4p_relevance":17,"practical_applicability":15,"market_impact":7,"recency":7,"credibility":2,
+     "title_has_strategy_phrase":false,"stp_specific":true,"product_specific":false,"price_specific":false,"place_specific":true,"promotion_specific":false,
+     "is_duplicate":false,"duplicate_of":null,"is_ad":false,"reject_reason":null},
+
+    {"id":"a5","title":"D브랜드, 해외 진출에 D2C 대신 현지 리테일러 제휴 선택","tags":["해외진출","유통전략"],
+     "strategic_relevance":22,"stp_4p_relevance":18,"practical_applicability":16,"market_impact":8,"recency":8,"credibility":3,
+     "title_has_strategy_phrase":false,"stp_specific":false,"product_specific":false,"price_specific":false,"place_specific":true,"promotion_specific":false,
+     "is_duplicate":false,"duplicate_of":null,"is_ad":false,"reject_reason":null},
+
+    {"id":"a3","title":"B리테일, 구독형 정기배송 가격모델 도입 배경","tags":["가격전략","고객경험"],
+     "strategic_relevance":21,"stp_4p_relevance":18,"practical_applicability":15,"market_impact":8,"recency":8,"credibility":3,
+     "title_has_strategy_phrase":false,"stp_specific":false,"product_specific":false,"price_specific":true,"place_specific":false,"promotion_specific":false,
+     "is_duplicate":false,"duplicate_of":null,"is_ad":false,"reject_reason":null},
+
+    {"id":"a6","title":"E사, 인플루언서 마케팅에서 장기 앰배서더 체제로 전환","tags":["프로모션전략","고객경험"],
+     "strategic_relevance":21,"stp_4p_relevance":17,"practical_applicability":15,"market_impact":8,"recency":7,"credibility":3,
+     "title_has_strategy_phrase":false,"stp_specific":false,"product_specific":false,"price_specific":false,"place_specific":false,"promotion_specific":true,
+     "is_duplicate":false,"duplicate_of":null,"is_ad":false,"reject_reason":null},
+
+    {"id":"a7","title":"F플랫폼, AI 추천 기반으로 검색 광고 상품 개편","tags":["AI마케팅","경쟁전략"],
+     "strategic_relevance":20,"stp_4p_relevance":17,"practical_applicability":15,"market_impact":7,"recency":7,"credibility":3,
+     "title_has_strategy_phrase":false,"stp_specific":false,"product_specific":false,"price_specific":false,"place_specific":false,"promotion_specific":true,
+     "is_duplicate":false,"duplicate_of":null,"is_ad":false,"reject_reason":null},
+
+    {"id":"r2","title":"OO뷰티, 클린뷰티 신제품 발표회 개최","tags":["뷰티","브랜드전략"],
+     "strategic_relevance":20,"stp_4p_relevance":16,"practical_applicability":15,"market_impact":7,"recency":7,"credibility":3,
+     "title_has_strategy_phrase":false,"stp_specific":true,"product_specific":true,"price_specific":false,"place_specific":false,"promotion_specific":false,
+     "is_duplicate":true,"duplicate_of":"a1","is_ad":false,"reject_reason":"중복"},
+
+    {"id":"r10","title":"A이커머스, 입점 수수료 인하로 소상공인 화답 잇따라","tags":["유통전략","이커머스"],
+     "strategic_relevance":18,"stp_4p_relevance":15,"practical_applicability":13,"market_impact":6,"recency":6,"credibility":3,
+     "title_has_strategy_phrase":false,"stp_specific":false,"product_specific":false,"price_specific":false,"place_specific":true,"promotion_specific":false,
+     "is_duplicate":true,"duplicate_of":"a2","is_ad":false,"reject_reason":"중복"},
+
+    {"id":"r9","title":"OO뷰티, 신제품 클린뷰티 라인 공개","tags":["뷰티","브랜드전략"],
+     "strategic_relevance":12,"stp_4p_relevance":9,"practical_applicability":9,"market_impact":4,"recency":3,"credibility":1,
+     "title_has_strategy_phrase":false,"stp_specific":true,"product_specific":false,"price_specific":false,"place_specific":false,"promotion_specific":false,
+     "is_duplicate":true,"duplicate_of":"a1","is_ad":false,"reject_reason":"중복"},
+
+    {"id":"r7","title":"K뷰티, 강남 팝업스토어 오픈","tags":["뷰티","고객경험"],
+     "strategic_relevance":13,"stp_4p_relevance":11,"practical_applicability":10,"market_impact":5,"recency":4,"credibility":1,
+     "title_has_strategy_phrase":false,"stp_specific":false,"product_specific":false,"price_specific":false,"place_specific":false,"promotion_specific":false,
+     "is_duplicate":false,"duplicate_of":null,"is_ad":false,"reject_reason":"단발성 이벤트, 고객 경험 설계 설명 부족"},
+
+    {"id":"r3","title":"G브랜드 대표, 창업 10년 인터뷰","tags":["브랜드전략"],
+     "strategic_relevance":12,"stp_4p_relevance":10,"practical_applicability":9,"market_impact":5,"recency":4,"credibility":1,
+     "title_has_strategy_phrase":false,"stp_specific":false,"product_specific":false,"price_specific":false,"place_specific":false,"promotion_specific":false,
+     "is_duplicate":false,"duplicate_of":null,"is_ad":false,"reject_reason":"인터뷰 위주, 구체적 전략 요소 부재"},
+
+    {"id":"r4","title":"H사, 3분기 매출 전년 대비 30% 증가 발표","tags":["경쟁전략"],
+     "strategic_relevance":11,"stp_4p_relevance":9,"practical_applicability":8,"market_impact":3,"recency":3,"credibility":1,
+     "title_has_strategy_phrase":false,"stp_specific":false,"product_specific":false,"price_specific":false,"place_specific":false,"promotion_specific":false,
+     "is_duplicate":false,"duplicate_of":null,"is_ad":false,"reject_reason":"단순 실적 발표"},
+
+    {"id":"r5","title":"I편의점, 여름 한정판 굿즈 출시","tags":["프로모션전략"],
+     "strategic_relevance":10,"stp_4p_relevance":8,"practical_applicability":7,"market_impact":4,"recency":3,"credibility":1,
+     "title_has_strategy_phrase":false,"stp_specific":false,"product_specific":false,"price_specific":false,"place_specific":false,"promotion_specific":false,
+     "is_duplicate":false,"duplicate_of":null,"is_ad":true,"reject_reason":"화제성 위주, 표적·포지셔닝 연결 불명확"},
+
+    {"id":"r8","title":"L사, ESG 경영보고서 발간","tags":["경쟁전략"],
+     "strategic_relevance":9,"stp_4p_relevance":8,"practical_applicability":7,"market_impact":3,"recency":3,"credibility":1,
+     "title_has_strategy_phrase":false,"stp_specific":false,"product_specific":false,"price_specific":false,"place_specific":false,"promotion_specific":false,
+     "is_duplicate":false,"duplicate_of":null,"is_ad":false,"reject_reason":"마케팅·브랜드 전략과 직접 연관성 낮음"},
+
+    {"id":"r6","title":"J플랫폼, 앱 UI 개편 업데이트 공지","tags":["AI마케팅"],
+     "strategic_relevance":9,"stp_4p_relevance":7,"practical_applicability":6,"market_impact":3,"recency":3,"credibility":1,
+     "title_has_strategy_phrase":false,"stp_specific":false,"product_specific":false,"price_specific":false,"place_specific":false,"promotion_specific":false,
+     "is_duplicate":false,"duplicate_of":null,"is_ad":false,"reject_reason":"제품 공지성, 전략 해석 여지 적음"},
+
+    {"id":"r11","title":"OO코스메틱, 신제품 출시 기념 팝업 이벤트 진행","tags":["프로모션전략"],
+     "strategic_relevance":8,"stp_4p_relevance":6,"practical_applicability":6,"market_impact":2,"recency":3,"credibility":1,
+     "title_has_strategy_phrase":false,"stp_specific":false,"product_specific":false,"price_specific":false,"place_specific":false,"promotion_specific":false,
+     "is_duplicate":false,"duplicate_of":null,"is_ad":true,"reject_reason":"이벤트 홍보 위주, 전략 설명 없음"},
+
+    {"id":"r1","title":"OO브랜드, 여름 프로모션 20% 할인 행사 진행","tags":["프로모션전략"],
+     "strategic_relevance":7,"stp_4p_relevance":6,"practical_applicability":5,"market_impact":2,"recency":2,"credibility":1,
+     "title_has_strategy_phrase":false,"stp_specific":false,"product_specific":false,"price_specific":false,"place_specific":false,"promotion_specific":false,
+     "is_duplicate":false,"duplicate_of":null,"is_ad":true,"reject_reason":"할인 안내 위주, 전략적 배경 설명 없음"},
+
+    {"id":"r13","title":"OO그룹, '2026 브랜드 전략' 발표…신년 각오 다져","tags":["브랜드전략"],
+     "strategic_relevance":6,"stp_4p_relevance":5,"practical_applicability":5,"market_impact":2,"recency":3,"credibility":1,
+     "title_has_strategy_phrase":true,"stp_specific":false,"product_specific":false,"price_specific":false,"place_specific":false,"promotion_specific":false,
+     "is_duplicate":false,"duplicate_of":null,"is_ad":false,"reject_reason":"제목에 문구는 있으나 실행 내용 없음 (키워드 함정 검증 사례)"},
+
+    {"id":"r12","title":"OO생활용품, 창립 15주년 기념 사은품 증정 이벤트","tags":["프로모션전략"],
+     "strategic_relevance":6,"stp_4p_relevance":5,"practical_applicability":4,"market_impact":2,"recency":2,"credibility":1,
+     "title_has_strategy_phrase":false,"stp_specific":false,"product_specific":false,"price_specific":false,"place_specific":false,"promotion_specific":false,
+     "is_duplicate":false,"duplicate_of":null,"is_ad":true,"reject_reason":"순수 홍보성, 전략 요소 없음"}
+  ]
+}

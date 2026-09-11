@@ -1,0 +1,11 @@
+anthropic>=0.68
+requests>=2.32
+supabase>=2.9
+cryptography>=43.0
+python-dotenv>=1.0
+fastapi>=0.115
+pydantic>=2.9
+
+# dev / test only
+pytest>=8.3
+uvicorn>=0.32
