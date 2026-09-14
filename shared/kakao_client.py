@@ -3,11 +3,13 @@ Kakao Developers — "나에게 보내기" (send-to-self) client.
 
 Sends the approved single-message format (quote / bold-styled title / body
 / link, one block per liked article, numbered ①②③...). Kakao's plain
-`text` default template has a per-message length cap — the exact current
-limit should be confirmed against a real account during Phase 4 live
-testing (KAKAO_TEXT_MAX_CHARS below is a conservative placeholder). When
-the combined message would exceed it, we split **only at article
-boundaries** (spec section 14: "기사 중간에서 메시지가 잘리지 않도록").
+`text` default template has a per-message length cap. Verified directly
+against the real API (2026-09-14): single messages of 4384, 11000, and
+15000 characters were all accepted, so KAKAO_TEXT_MAX_CHARS is set with
+headroom above what a full 30-article selection (MAX_SELECT) produces in
+practice, while still splitting **only at article boundaries** as a
+safety net (spec section 14: "기사 중간에서 메시지가 잘리지 않도록") if it's
+ever exceeded.
 
 Token lifecycle:
   - First authorization is a one-time manual step (scripts/kakao_auth_setup.py)
@@ -31,8 +33,22 @@ logger = logging.getLogger(__name__)
 
 KAUTH_TOKEN_URL = "https://kauth.kakao.com/oauth/token"
 KAPI_SEND_URL = "https://kapi.kakao.com/v2/api/talk/memo/default/send"
-KAKAO_TEXT_MAX_CHARS = 950  # conservative placeholder — verify against real API in Phase 4
-CIRCLED_DIGITS = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"]
+KAKAO_TEXT_MAX_CHARS = 12000  # verified safe against the real API - see module docstring
+
+
+def _circled_digits() -> list[str]:
+    """① .. ㊿ — circled digits 1-50, spanning the two Unicode blocks that
+    define them (Enclosed Alphanumerics for 1-20, then CJK-compatibility
+    Enclosed Letters/Months for 21-50). 50 comfortably covers MAX_SELECT
+    (30) with room to grow before ever falling back to plain "(N)"."""
+    return (
+        [chr(0x2460 + i) for i in range(20)]  # ① .. ⑳ (1-20)
+        + [chr(0x3251 + i) for i in range(15)]  # ㉑ .. ㉟ (21-35)
+        + [chr(0x32B1 + i) for i in range(15)]  # ㊱ .. ㊿ (36-50)
+    )
+
+
+CIRCLED_DIGITS = _circled_digits()
 
 
 class KakaoAuthError(Exception):

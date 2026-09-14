@@ -18,7 +18,7 @@ def test_short_message_stays_as_one_block():
 
 
 def test_long_message_splits_at_article_boundary_only():
-    articles = [_article(i, body_len=60) for i in range(6)]
+    articles = [_article(i, body_len=3000) for i in range(6)]
     blocks = build_message_blocks("인트로", articles)
     assert len(blocks) > 1
     # every block stays under the cap, and every block still starts with the intro
