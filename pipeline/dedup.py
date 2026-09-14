@@ -26,8 +26,11 @@ logger = logging.getLogger(__name__)
 NEAR_EXACT_TITLE_THRESHOLD = 0.92
 
 # How many of the top-scoring (non-duplicate) candidates to re-check for
-# duplicates against EACH OTHER (see resolve_cross_batch_duplicates).
-CROSS_DEDUP_POOL_SIZE = 30
+# duplicates against EACH OTHER (see resolve_cross_batch_duplicates). Needs
+# real headroom above max_select: removing duplicates from the pool backfills
+# from lower-ranked candidates that never got compared against anything, so
+# the pool has to comfortably outsize the final selection.
+CROSS_DEDUP_POOL_MARGIN = 20
 
 CROSS_DEDUP_SYSTEM_PROMPT = """당신은 뉴스 큐레이션 파이프라인의 중복 판별 보조입니다.
 아래 기사 목록은 각각 별도 배치에서 채점되어, 같은 실제 이슈를 다루는 기사끼리도
@@ -92,10 +95,11 @@ def resolve_cross_batch_duplicates(evaluations: list[Evaluation],
 
     Never raises - on any failure the evaluations are returned unchanged,
     same error policy as scorer.evaluate()."""
+    pool_size = settings.max_select + CROSS_DEDUP_POOL_MARGIN
     pool = sorted(
         (e for e in evaluations if not e.is_duplicate),
         key=lambda e: e.final_score, reverse=True,
-    )[:CROSS_DEDUP_POOL_SIZE]
+    )[:pool_size]
     if len(pool) < 2:
         return evaluations
 

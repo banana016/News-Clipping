@@ -176,8 +176,10 @@
           const value = btn.getAttribute('data-value');
           const next = ratings[id] === value ? undefined : value;
           ratings[id] = next;
-          post('/api/feedback', { article_id: id, rating: next || 'good' })
-            .catch(function (err) { console.error(err); });
+          if (next) {
+            post('/api/feedback', { article_id: id, rating: next })
+              .catch(function (err) { console.error(err); });
+          }
           renderCards(); renderReview();
         };
       });
