@@ -5,6 +5,8 @@ The always-on half of the system (Vercel). Three endpoints:
   POST /api/feedback             -> record 도움됨/별로예요, update tag_weights
   POST /api/kakao-send           -> send every currently-liked, not-yet-sent
                                      article as Kakao text message(s)
+  GET  /api/liked-full-text      -> every currently-liked article as one
+                                     copy/paste-able text block
 
 Static page: web/public/index.html (adapted from the approved mockup) reads
 `token` from its own URL and calls these.
@@ -20,7 +22,7 @@ from pydantic import BaseModel
 from pipeline import briefing
 from shared import db
 from shared.kakao_client import (
-    KakaoAuthError, KakaoSendError, refresh_access_token, send_liked_articles,
+    KakaoAuthError, KakaoSendError, build_full_text, refresh_access_token, send_liked_articles,
 )
 from shared.magic_link import InvalidToken, verify_token
 from shared.models import Evaluation
@@ -75,6 +77,35 @@ class KakaoSendBody(BaseModel):
     token: str
 
 
+def _build_kakao_payloads(liked_rows: list[dict]) -> list[dict]:
+    payloads = []
+    for row in liked_rows:
+        evaluation_row = row.get("evaluations") or {}
+        ev = Evaluation(
+            article_id=row["id"], strategic_relevance=0, stp_4p_relevance=0,
+            practical_applicability=0, market_impact=0, recency=0, credibility=0,
+            tags=evaluation_row.get("tags", []), summary=evaluation_row.get("summary", ""),
+            interpretation=evaluation_row.get("interpretation", ""), application="",
+            insight_quote=evaluation_row.get("insight_quote", ""),
+        )
+        article_stub = type("A", (), {"title": row["title"], "url": row["url"]})()
+        payloads.append(briefing.build_kakao_article_payload(ev, article_stub))
+    return payloads
+
+
+@app.get("/api/liked-full-text")
+def get_liked_full_text(token: str | None = None):
+    _require_token(token)
+
+    liked_rows = db.get_liked_articles()
+    if not liked_rows:
+        return {"ok": True, "count": 0, "text": "", "message": "도움됨으로 표시된 기사가 없습니다."}
+
+    payloads = _build_kakao_payloads(liked_rows)
+    intro = f"도움됨 표시하신 기사 {len(payloads)}건입니다."
+    return {"ok": True, "count": len(payloads), "text": build_full_text(intro, payloads)}
+
+
 @app.post("/api/kakao-send")
 def post_kakao_send(body: KakaoSendBody):
     _require_token(body.token)
@@ -96,19 +127,7 @@ def post_kakao_send(body: KakaoSendBody):
     except KakaoAuthError:
         pass  # fall back to the existing access token; it may still be valid
 
-    payloads = []
-    for row in liked_rows:
-        evaluation_row = row.get("evaluations") or {}
-        ev = Evaluation(
-            article_id=row["id"], strategic_relevance=0, stp_4p_relevance=0,
-            practical_applicability=0, market_impact=0, recency=0, credibility=0,
-            tags=evaluation_row.get("tags", []), summary=evaluation_row.get("summary", ""),
-            interpretation=evaluation_row.get("interpretation", ""), application="",
-            insight_quote=evaluation_row.get("insight_quote", ""),
-        )
-        article_stub = type("A", (), {"title": row["title"], "url": row["url"]})()
-        payloads.append(briefing.build_kakao_article_payload(ev, article_stub))
-
+    payloads = _build_kakao_payloads(liked_rows)
     intro = f"도움됨 표시하신 기사 {len(payloads)}건입니다."
     try:
         sent_count = send_liked_articles(access_token, intro, payloads)

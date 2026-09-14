@@ -118,18 +118,28 @@ def refresh_access_token(refresh_token: str) -> KakaoTokens:
     )
 
 
+def _render_article(i: int, art: dict) -> str:
+    num = CIRCLED_DIGITS[i] if i < len(CIRCLED_DIGITS) else f"({i + 1})"
+    return f"{num} '{art['quote']}'\n{art['title']}\n\n{art['body']}\n\n{art['link']}"
+
+
+def build_full_text(intro: str, liked_articles: list[dict]) -> str:
+    """One combined block, never split - for the "전문 보기" copy/paste flow,
+    where the user pastes into KakaoTalk themselves, so none of the
+    default-template length/rendering limits that build_message_blocks
+    works around apply."""
+    parts = [intro] + [_render_article(i, art) for i, art in enumerate(liked_articles)]
+    return "\n\n".join(parts)
+
+
 def build_message_blocks(intro: str, liked_articles: list[dict]) -> list[str]:
     """liked_articles: [{quote, title, body, link}, ...] in send order.
     Returns one or more message strings, split only between articles.
     """
-    def render_article(i: int, art: dict) -> str:
-        num = CIRCLED_DIGITS[i] if i < len(CIRCLED_DIGITS) else f"({i + 1})"
-        return f"{num} '{art['quote']}'\n{art['title']}\n\n{art['body']}\n\n{art['link']}"
-
     blocks: list[str] = []
     current = intro
     for i, art in enumerate(liked_articles):
-        piece = render_article(i, art)
+        piece = _render_article(i, art)
         candidate = f"{current}\n\n{piece}"
         if len(candidate) > KAKAO_TEXT_MAX_CHARS and current != intro:
             blocks.append(current)

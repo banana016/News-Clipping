@@ -184,25 +184,42 @@ def already_kakao_sent_ids() -> set[str]:
     return sent
 
 
-def get_liked_articles_for_kakao() -> list[dict]:
-    """Articles whose MOST RECENT feedback is 'good' and haven't been
-    Kakao-sent yet, joined with their evaluation content. feedback is an
-    append-only log (record_feedback always inserts), so a later 'bad'
-    must override an earlier 'good' - checking for "any 'good' row ever"
-    would keep sending an article after the user changed their mind."""
-    already_sent = already_kakao_sent_ids()
+def _latest_good_feedback_ids() -> set[str]:
+    """Article ids whose MOST RECENT feedback row is 'good'. feedback is an
+    append-only log (record_feedback always inserts), so a later 'bad' must
+    override an earlier 'good' - checking for "any 'good' row ever" would
+    treat an article as liked forever, even after the user changed their
+    mind."""
     feedback = _run(get_client().table("feedback").select("article_id, rating").order("rated_at"))
     latest_rating: dict[str, str] = {}
     for row in feedback.data:
         latest_rating[row["article_id"]] = row["rating"]  # later rows overwrite earlier ones
-    liked_ids = [aid for aid, rating in latest_rating.items()
-                 if rating == "good" and aid not in already_sent]
-    if not liked_ids:
+    return {aid for aid, rating in latest_rating.items() if rating == "good"}
+
+
+def _articles_with_evaluations(article_ids: list[str]) -> list[dict]:
+    if not article_ids:
         return []
-    articles = _run(get_client().table("articles")
-                    .select("*, evaluations!article_id(*)")
-                    .in_("id", liked_ids))
-    return articles.data
+    res = _run(get_client().table("articles")
+               .select("*, evaluations!article_id(*)")
+               .in_("id", article_ids))
+    return res.data
+
+
+def get_liked_articles_for_kakao() -> list[dict]:
+    """Currently-liked articles that haven't been Kakao-sent yet, joined
+    with their evaluation content. Used by the (currently dormant) Kakao
+    API auto-send path."""
+    liked_ids = list(_latest_good_feedback_ids() - already_kakao_sent_ids())
+    return _articles_with_evaluations(liked_ids)
+
+
+def get_liked_articles() -> list[dict]:
+    """Every currently-liked article, regardless of Kakao-send history -
+    used by the "전문 보기" copy/paste flow, which has no independent
+    notion of "already sent" since sending happens outside this app."""
+    liked_ids = list(_latest_good_feedback_ids())
+    return _articles_with_evaluations(liked_ids)
 
 
 def record_kakao_send(article_ids: list[str], status: str, error_message: str | None = None) -> None:
