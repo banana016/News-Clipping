@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import anthropic
 
@@ -28,6 +29,7 @@ from shared.models import Article, Evaluation
 logger = logging.getLogger(__name__)
 
 BATCH_SIZE = 12
+MAX_CONCURRENT_BATCHES = 5
 
 SYSTEM_PROMPT = f"""당신은 마케팅·브랜드 전략 뉴스 큐레이션 에이전트의 평가자입니다.
 사용자는 마케팅/브랜드 전략 수립, 소비재·뷰티·이커머스 브랜드 운영, 온라인 판매채널
@@ -159,61 +161,81 @@ def _call_claude(client: anthropic.Anthropic, batch: list[Article]) -> list[dict
     return json.loads(text)["evaluations"]
 
 
+def _evaluate_batch(client: anthropic.Anthropic, by_id: dict[str, Article],
+                     start: int, batch: list[Article]) -> list[Evaluation]:
+    """Call Claude for one batch and convert the response to Evaluations.
+    Never raises — a failed batch just yields no evaluations for its
+    articles, and the run continues (see run_pipeline.py error policy)."""
+    try:
+        raw_results = _call_claude(client, batch)
+    except anthropic.RateLimitError as exc:
+        logger.error("Claude rate limited on batch starting %d: %s", start, exc)
+        return []
+    except anthropic.APIStatusError as exc:
+        logger.error("Claude API error on batch starting %d: %s", start, exc)
+        return []
+    except anthropic.APIConnectionError as exc:
+        logger.error("Claude connection error on batch starting %d: %s", start, exc)
+        return []
+    except (json.JSONDecodeError, KeyError, StopIteration) as exc:
+        logger.error("Malformed Claude response on batch starting %d: %s", start, exc)
+        return []
+
+    results = []
+    for item in raw_results:
+        article = by_id.get(item["id"])
+        if article is None:
+            continue  # Claude echoed an id we didn't send; ignore defensively
+        results.append(Evaluation(
+            article_id=article.id,
+            strategic_relevance=item["strategic_relevance"],
+            stp_4p_relevance=item["stp_4p_relevance"],
+            practical_applicability=item["practical_applicability"],
+            market_impact=item["market_impact"],
+            recency=item["recency"],
+            credibility=item["credibility"],
+            tags=[t for t in item["tags"] if t in TAGS][:3],
+            summary=item["summary"],
+            interpretation=item["interpretation"],
+            application=item["application"],
+            insight_quote=item["insight_quote"],
+            is_ad=item["is_ad"],
+            is_duplicate=item["is_duplicate"],
+            duplicate_of=item["duplicate_of"],
+            reject_reason=item["reject_reason"],
+            title_has_strategy_phrase=_title_bonus(article.title),
+            stp_specific=item["stp_specific"],
+            product_specific=item["product_specific"],
+            price_specific=item["price_specific"],
+            place_specific=item["place_specific"],
+            promotion_specific=item["promotion_specific"],
+        ))
+    return results
+
+
 def evaluate(candidates: list[Article]) -> list[Evaluation]:
-    """Evaluate every candidate, batch by batch. Never raises on a single
-    batch failure — that batch's articles are simply dropped from
-    consideration and the run continues (see run_pipeline.py error policy)."""
+    """Evaluate every candidate, batch by batch. Batches are sent to Claude
+    concurrently (MAX_CONCURRENT_BATCHES at a time) since each call is
+    network-bound and independent — sequential calls were the reason the
+    15-minute GitHub Actions job timeout got hit on runs with many
+    candidates."""
     if not candidates:
         return []
 
     client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
     by_id = {a.id: a for a in candidates}
+    batches = [
+        (start, candidates[start:start + BATCH_SIZE])
+        for start in range(0, len(candidates), BATCH_SIZE)
+    ]
+
     evaluations: list[Evaluation] = []
-
-    for start in range(0, len(candidates), BATCH_SIZE):
-        batch = candidates[start:start + BATCH_SIZE]
-        try:
-            raw_results = _call_claude(client, batch)
-        except anthropic.RateLimitError as exc:
-            logger.error("Claude rate limited on batch starting %d: %s", start, exc)
-            continue
-        except anthropic.APIStatusError as exc:
-            logger.error("Claude API error on batch starting %d: %s", start, exc)
-            continue
-        except anthropic.APIConnectionError as exc:
-            logger.error("Claude connection error on batch starting %d: %s", start, exc)
-            continue
-        except (json.JSONDecodeError, KeyError, StopIteration) as exc:
-            logger.error("Malformed Claude response on batch starting %d: %s", start, exc)
-            continue
-
-        for item in raw_results:
-            article = by_id.get(item["id"])
-            if article is None:
-                continue  # Claude echoed an id we didn't send; ignore defensively
-            evaluations.append(Evaluation(
-                article_id=article.id,
-                strategic_relevance=item["strategic_relevance"],
-                stp_4p_relevance=item["stp_4p_relevance"],
-                practical_applicability=item["practical_applicability"],
-                market_impact=item["market_impact"],
-                recency=item["recency"],
-                credibility=item["credibility"],
-                tags=[t for t in item["tags"] if t in TAGS][:3],
-                summary=item["summary"],
-                interpretation=item["interpretation"],
-                application=item["application"],
-                insight_quote=item["insight_quote"],
-                is_ad=item["is_ad"],
-                is_duplicate=item["is_duplicate"],
-                duplicate_of=item["duplicate_of"],
-                reject_reason=item["reject_reason"],
-                title_has_strategy_phrase=_title_bonus(article.title),
-                stp_specific=item["stp_specific"],
-                product_specific=item["product_specific"],
-                price_specific=item["price_specific"],
-                place_specific=item["place_specific"],
-                promotion_specific=item["promotion_specific"],
-            ))
+    with ThreadPoolExecutor(max_workers=MAX_CONCURRENT_BATCHES) as pool:
+        futures = {
+            pool.submit(_evaluate_batch, client, by_id, start, batch): start
+            for start, batch in batches
+        }
+        for future in as_completed(futures):
+            evaluations.extend(future.result())
 
     return evaluations

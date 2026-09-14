@@ -1,0 +1,855 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>브랜드 전략 브리핑</title>
+<style>
+  :root{
+    --paper:#fbfbfd;
+    --surface:#ffffff;
+    --surface-2:#f5f5f7;
+    --line:#d2d2d7;
+    --ink:#1d1d1f;
+    --ink-soft:#6e6e73;
+    --ink-faint:#86868b;
+    --accent:#0071e3;
+    --accent-hover:#0077ed;
+    --accent-active:#006edb;
+    --good-fill:#248a3d;
+    --good-fill-ink:#ffffff;
+    --good-track:#e3f3e8;
+    --bad-fill:#d70015;
+    --bad-fill-ink:#ffffff;
+    --kakao:#FEE500;
+    --kakao-ink:#191919;
+    --focus:#0071e3;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Apple SD Gothic Neo","Noto Sans KR","Helvetica Neue",Arial,sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:56px 20px 90px;}
+
+  /* ---- hero ---- */
+  .hero{text-align:center;margin-bottom:34px;}
+  .kicker{
+    font-size:13px;font-weight:600;color:var(--accent);
+    letter-spacing:.02em;margin-bottom:10px;
+  }
+  h1{
+    font-size:44px;font-weight:700;letter-spacing:-.015em;
+    margin:0 0 12px;text-wrap:balance;
+  }
+  .sub{
+    font-size:19px;color:var(--ink-soft);max-width:480px;
+    margin:0 auto;text-wrap:balance;
+  }
+
+  .notice{
+    background:var(--surface-2);border-radius:16px;
+    padding:14px 20px;font-size:12.5px;line-height:1.55;color:var(--ink-soft);
+    max-width:600px;margin:28px auto 0;text-align:center;
+  }
+
+  /* ---- segmented tab control ---- */
+  .seg-row{display:flex;justify-content:center;margin:28px 0 32px;}
+  .segmented{
+    display:inline-flex;background:var(--surface-2);border-radius:980px;
+    padding:4px;gap:2px;
+  }
+  .tab-btn{
+    appearance:none;border:none;background:transparent;cursor:pointer;
+    border-radius:980px;padding:9px 22px;font-size:14px;font-weight:600;
+    color:var(--ink-soft);font-family:inherit;
+  }
+  .tab-btn[aria-selected="true"]{
+    background:#fff;color:var(--ink);
+    box-shadow:0 1px 3px rgba(0,0,0,.14);
+  }
+  .tab-btn:focus-visible{outline:2px solid var(--focus);outline-offset:3px;}
+
+  section[role="tabpanel"][hidden]{display:none;}
+
+  /* ---- email mockup ---- */
+  .email-frame{
+    background:var(--surface);border-radius:20px;overflow:hidden;
+    box-shadow:0 2px 14px rgba(0,0,0,.06);
+  }
+  .email-chrome{
+    background:var(--surface-2);padding:10px 22px;
+    font-size:11.5px;color:var(--ink-faint);font-weight:500;
+  }
+  .email-meta{padding:20px 24px 4px;}
+  .email-meta .row{display:flex;gap:8px;font-size:13px;color:var(--ink-soft);padding:2.5px 0;}
+  .email-meta .row b{color:var(--ink);font-weight:600;min-width:56px;}
+  .email-subject{
+    font-weight:700;font-size:20px;letter-spacing:-.01em;
+    padding:12px 24px 0;text-wrap:balance;
+  }
+  .email-body{padding:16px 24px 26px;}
+  .email-stats{
+    font-size:13px;font-weight:600;color:var(--ink);
+    font-variant-numeric:tabular-nums;
+    background:var(--surface-2);border-radius:12px;padding:12px 16px;margin:12px 0 18px;
+  }
+  .email-p{font-size:14.5px;color:var(--ink-soft);margin:0 0 20px;}
+  .cta{
+    display:inline-block;background:var(--accent);color:#fff;
+    font-size:15px;font-weight:600;text-decoration:none;
+    padding:12px 26px;border-radius:980px;
+  }
+  .cta:hover{background:var(--accent-hover);}
+  .cta:active{background:var(--accent-active);}
+  .email-foot{
+    padding:14px 24px;font-size:11.5px;color:var(--ink-faint);
+    border-top:1px solid var(--line);
+  }
+
+  /* ---- app / briefing page ---- */
+  .stat-row{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+    margin-bottom:28px;
+  }
+  .stat-tile{
+    background:var(--surface-2);border-radius:16px;
+    padding:18px 12px;text-align:center;
+    border:none;width:100%;cursor:pointer;font-family:inherit;
+    transition:background .15s ease;
+  }
+  .stat-tile:hover{background:#ececef;}
+  .stat-tile:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+  .stat-num{
+    font-weight:700;font-size:28px;font-variant-numeric:tabular-nums;
+    letter-spacing:-.01em;
+  }
+  .stat-label{font-size:12px;color:var(--ink-faint);margin-top:3px;}
+  .stat-caret{font-size:11px;color:var(--accent);margin-top:7px;font-weight:600;}
+
+  .mini-panel{margin-bottom:20px;}
+  .mini-panel-head{font-size:12px;color:var(--ink-faint);margin:0 0 10px;padding:0 4px;line-height:1.5;}
+
+  .collect-list{background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .collect-link{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:13px 20px;border-bottom:1px solid var(--line);
+    font-size:13.5px;color:var(--ink);text-decoration:none;
+  }
+  .collect-link:last-child{border-bottom:none;}
+  .collect-link:hover{background:var(--surface-2);}
+  .collect-link:focus-visible{outline:2px solid var(--focus);outline-offset:-2px;}
+  .collect-link .chev{color:var(--ink-faint);font-size:15px;flex-shrink:0;}
+
+  .review-card{
+    background:var(--surface);border-radius:16px;
+    padding:18px 20px;margin-bottom:10px;
+    box-shadow:0 1px 3px rgba(0,0,0,.04);
+  }
+  .review-card:last-child{margin-bottom:0;}
+  .review-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:9px;}
+  .reason-badge{
+    background:#FFF1DC;color:#9A5B00;font-size:11px;font-weight:600;
+    padding:4px 10px;border-radius:999px;
+  }
+  .score-text{font-size:12px;color:var(--ink-faint);font-variant-numeric:tabular-nums;}
+  .review-card h4{font-size:16px;font-weight:700;letter-spacing:-.005em;margin:0 0 7px;text-wrap:balance;}
+  .review-card .reason-desc{font-size:13px;color:var(--ink-soft);line-height:1.55;margin:0 0 12px;}
+  .review-card .meta{font-size:12px;color:var(--ink-faint);margin-bottom:12px;}
+
+  .date-line{
+    font-size:13px;color:var(--ink-faint);font-weight:500;
+    margin-bottom:10px;text-align:center;
+  }
+
+  .cards{display:flex;flex-direction:column;gap:14px;margin-bottom:28px;}
+  .card{
+    background:var(--surface);border-radius:20px;
+    padding:26px 26px 22px;
+    box-shadow:0 1px 4px rgba(0,0,0,.05);
+  }
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:11px;}
+  .tag{
+    font-size:11.5px;font-weight:600;letter-spacing:.01em;
+    background:var(--surface-2);color:var(--ink-soft);
+    padding:4px 10px;border-radius:999px;
+  }
+  .card h3{
+    font-weight:700;font-size:19px;letter-spacing:-.01em;
+    margin:0 0 10px;text-wrap:balance;
+  }
+  .card p{font-size:14.5px;line-height:1.6;color:var(--ink-soft);margin:0 0 12px;}
+  .card .meta{font-size:12px;color:var(--ink-faint);margin-bottom:14px;}
+  .card-foot{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    flex-wrap:wrap;
+    border-top:1px solid var(--line);padding-top:14px;
+  }
+  .link{color:var(--accent);font-size:14px;font-weight:600;text-decoration:none;}
+  .link:hover{color:var(--accent-hover);text-decoration:underline;}
+
+  .fb-group{display:flex;align-items:center;gap:8px;}
+  .fb-btn{
+    appearance:none;cursor:pointer;font-family:inherit;
+    font-size:13px;font-weight:600;
+    padding:7px 14px;border-radius:999px;border:none;
+    background:var(--surface-2);color:var(--ink-soft);
+  }
+  .fb-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+  .fb-btn[data-active="true"][data-value="good"]{background:var(--good-fill);color:var(--good-fill-ink);}
+  .fb-btn[data-active="true"][data-value="bad"]{background:var(--bad-fill);color:var(--bad-fill-ink);}
+  .fb-state{font-size:11px;color:var(--ink-faint);min-width:100px;}
+
+  .panel{
+    background:var(--surface-2);border-radius:20px;
+    padding:22px 24px 24px;margin-bottom:14px;
+  }
+  .panel h2{font-size:17px;font-weight:700;letter-spacing:-.01em;margin:0 0 4px;}
+  .panel .desc{font-size:13px;color:var(--ink-soft);margin:0 0 16px;line-height:1.55;}
+  .meter-row{margin-bottom:13px;}
+  .meter-row:last-child{margin-bottom:0;}
+  .meter-label{display:flex;justify-content:space-between;font-size:13px;color:var(--ink-soft);margin-bottom:6px;}
+  .meter-label b{color:var(--ink);font-weight:600;}
+  .meter-num{font-variant-numeric:tabular-nums;color:var(--ink-faint);font-weight:500;}
+  .meter-track{height:7px;border-radius:4px;background:var(--good-track);overflow:hidden;}
+  .meter-fill{height:100%;border-radius:4px;background:var(--good-fill);transition:width .4s ease;}
+  @media (prefers-reduced-motion: reduce){.meter-fill{transition:none;}}
+
+  /* ---- kakao send panel ---- */
+  .kakao-panel{
+    background:var(--surface-2);border-radius:20px;
+    padding:22px 24px 24px;margin-bottom:14px;
+  }
+  .kakao-head{
+    display:flex;align-items:flex-start;justify-content:space-between;
+    gap:16px;flex-wrap:wrap;
+  }
+  .kakao-head h2{font-size:17px;font-weight:700;letter-spacing:-.01em;margin:0 0 4px;}
+  .kakao-head .desc{font-size:13px;color:var(--ink-soft);line-height:1.55;max-width:400px;}
+  .kakao-btn{
+    appearance:none;border:none;cursor:pointer;font-family:inherit;
+    background:var(--kakao);color:var(--kakao-ink);
+    font-size:14px;font-weight:700;
+    padding:11px 20px;border-radius:980px;white-space:nowrap;
+  }
+  .kakao-btn:disabled{opacity:.45;cursor:not-allowed;}
+  .kakao-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+  .kakao-preview{
+    margin-top:18px;background:#fff;border-radius:14px;
+    padding:16px 18px;font-size:13px;color:var(--ink);line-height:1.7;
+  }
+  .kakao-preview .pv-line{padding:2px 0;}
+  .kakao-preview .pv-title{font-weight:600;}
+  .kakao-preview .pv-link{color:var(--accent);font-size:12px;word-break:break-all;}
+  .kakao-preview .pv-note{
+    margin-top:12px;padding-top:12px;border-top:1px solid var(--line);
+    font-size:11.5px;color:var(--ink-faint);
+  }
+
+  .footnote{
+    margin-top:8px;font-size:11.5px;color:var(--ink-faint);
+    text-align:center;line-height:1.6;
+  }
+
+  /* ---- kakao chat mockup ---- */
+  .kakao-chat-frame{
+    background:#B2C7DA;border-radius:22px;
+    padding:16px 12px 18px;
+    box-shadow:0 2px 14px rgba(0,0,0,.08);
+  }
+  .kakao-chat-title-row{display:flex;justify-content:center;margin-bottom:16px;}
+  .kakao-chat-title{
+    background:rgba(255,255,255,.6);color:#3c3c3c;
+    font-size:12px;font-weight:600;
+    padding:4px 13px;border-radius:999px;
+  }
+  .msg-row{display:flex;align-items:flex-end;gap:7px;margin-bottom:10px;}
+  .msg-row:last-child{margin-bottom:0;}
+  .msg-avatar{
+    width:32px;height:32px;border-radius:9px;background:var(--kakao);
+    flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:700;color:var(--kakao-ink);
+  }
+  .msg-avatar-spacer{width:32px;flex-shrink:0;}
+  .msg-col{display:flex;flex-direction:column;max-width:88%;min-width:0;}
+  .msg-sender{font-size:11.5px;color:#3c3c3c;margin:0 0 4px 3px;font-weight:600;}
+  .msg-bubble-text{
+    background:#fff;border-radius:3px 14px 14px 14px;
+    padding:10px 13px;font-size:13.5px;color:#1d1d1f;line-height:1.5;
+    box-shadow:0 1px 2px rgba(0,0,0,.08);
+  }
+  .msg-intro{font-size:13px;color:#1d1d1f;line-height:1.5;margin:0 0 14px;}
+  .msg-article{margin-bottom:16px;}
+  .msg-article-last{margin-bottom:0;}
+  .msg-quote{font-size:12.5px;color:#6b6b6b;margin:0 0 6px;}
+  .msg-title-bold{font-size:14.5px;font-weight:700;color:#1d1d1f;margin:0 0 9px;line-height:1.4;text-wrap:balance;}
+  .msg-body-text{font-size:13px;color:#1d1d1f;line-height:1.62;margin:0 0 9px;}
+  .msg-link-text{font-size:12.5px;color:#0b57d0;text-decoration:underline;word-break:break-all;}
+  .msg-time{font-size:10px;color:#4a4a4a;flex-shrink:0;}
+
+  @media (max-width:420px){
+    h1{font-size:34px;}
+    .sub{font-size:16px;}
+    .stat-num{font-size:22px;}
+    .card{padding:20px 18px 18px;}
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="kicker">나만의 마케팅 브리핑</div>
+    <h1>브랜드 전략 브리핑</h1>
+    <p class="sub">마케팅·브랜드 전략 뉴스를 골라 읽고, 도움된 기사만 카카오톡으로 받아보세요.</p>
+  </div>
+
+  <div class="notice">
+    이 페이지는 Phase 1 기획 단계의 목업입니다. 기사 제목·요약·수치는 형식 확인용 예시이며 실제 뉴스가 아닙니다.
+    도움됨 / 별로예요 평가는 이 브라우저에만 임시 저장되며, 실제 서비스에서는 서버에 저장되어 다음 회차 기사 선정 점수 계산에 자동으로 반영됩니다.
+  </div>
+
+  <div class="seg-row">
+    <div class="segmented" role="tablist" aria-label="목업 화면 전환">
+      <button class="tab-btn" id="tab-email" role="tab" aria-selected="true" aria-controls="panel-email">이메일 알림</button>
+      <button class="tab-btn" id="tab-app" role="tab" aria-selected="false" aria-controls="panel-app">브리핑 페이지</button>
+      <button class="tab-btn" id="tab-kakao" role="tab" aria-selected="false" aria-controls="panel-kakao">카카오톡 메시지</button>
+    </div>
+  </div>
+
+  <section id="panel-email" role="tabpanel" aria-labelledby="tab-email">
+    <div class="email-frame">
+      <div class="email-chrome">받은편지함</div>
+      <div class="email-meta">
+        <div class="row"><b>보낸사람</b><span>브랜드 전략 브리핑 &lt;brief@yourapp.app&gt;</span></div>
+        <div class="row"><b>받는사람</b><span>seyoung.kang80@gmail.com</span></div>
+        <div class="row"><b>일시</b><span>2026.09.11 (금) 07:02</span></div>
+      </div>
+      <div class="email-subject">오늘의 마케팅·브랜드 전략 브리핑 — 2026.09.11</div>
+      <div class="email-body">
+        <div class="email-stats">수집 173건 · 검토 42건 · 최종 선정 7건</div>
+        <p class="email-p">
+          오늘 선정된 기사 7건을 브리핑 페이지에서 확인하세요.
+          기사별로 도움됨 / 별로예요를 표시하면 다음 브리핑 선정 점수에 자동으로 반영되고,
+          도움됨으로 표시한 기사만 모아 카카오톡으로 받아볼 수 있습니다.
+        </p>
+        <a class="cta" href="#panel-app" id="cta-open">브리핑 페이지 열기</a>
+      </div>
+      <div class="email-foot">이 메일은 월·수·금 07:00에 자동 발송되며, 링크는 나만 아는 고유 주소의 브리핑 페이지로 연결되어 휴대폰·다른 컴퓨터에서도 열 수 있습니다.</div>
+    </div>
+  </section>
+
+  <section id="panel-app" role="tabpanel" aria-labelledby="tab-app" hidden>
+
+    <div class="date-line">2026.09.11 (금)</div>
+    <div class="stat-row">
+      <button class="stat-tile" id="tileCollect" type="button" aria-expanded="false" aria-controls="collectList">
+        <div class="stat-num">173</div><div class="stat-label">수집</div><div class="stat-caret">예시 보기</div>
+      </button>
+      <button class="stat-tile" id="tileReview" type="button" aria-expanded="false" aria-controls="reviewList">
+        <div class="stat-num">42</div><div class="stat-label">검토</div><div class="stat-caret">예시 보기</div>
+      </button>
+      <button class="stat-tile" id="tileFinal" type="button">
+        <div class="stat-num">7</div><div class="stat-label">최종 선정</div><div class="stat-caret">아래로 이동</div>
+      </button>
+    </div>
+
+    <div class="mini-panel" id="collectList" hidden>
+      <p class="mini-panel-head">수집 173건 중 예시 10건 · 제목을 누르면 기사 원문으로 이동합니다. 아직 Claude 분석 전이라 점수·평가는 없습니다.</p>
+      <div class="collect-list" id="collectRows"></div>
+    </div>
+
+    <div class="mini-panel" id="reviewList" hidden>
+      <p class="mini-panel-head">검토 42건 중 예시 8건 · Claude가 점수를 매겼지만 최종 7건에는 들지 못한 기사입니다. 여기서 도움됨을 누르면 그 기사도 카카오톡 발송 대상에 포함됩니다.</p>
+      <div id="reviewRows"></div>
+    </div>
+
+    <div class="cards" id="cards"></div>
+
+    <div class="kakao-panel">
+      <div class="kakao-head">
+        <div>
+          <h2>카카오톡으로 보내기</h2>
+          <p class="desc" id="kakaoDesc">도움됨으로 표시한 기사가 없습니다.</p>
+        </div>
+        <button class="kakao-btn" id="kakaoBtn" disabled>카카오톡으로 보내기</button>
+      </div>
+      <div class="kakao-preview" id="kakaoPreview" hidden></div>
+    </div>
+
+    <div class="panel">
+      <h2>피드백 반영 현황</h2>
+      <p class="desc">태그별 누적 "도움됨" 비율입니다. 비율이 낮은 태그는 다음 회차부터 가산점이 자동으로 줄어들고, 높은 태그는 우선순위가 올라갑니다. 아래 기사에 평가를 남기면 실시간으로 반영됩니다.</p>
+      <div id="meters"></div>
+    </div>
+
+    <div class="footnote">
+      기사 원문 전문은 저장하지 않으며, 제목·요약·링크·메타데이터만 보관합니다.<br>
+      동일 이슈를 다룬 기사가 여러 건 검토된 경우 가장 구체적인 1건만 선정됩니다.
+    </div>
+  </section>
+
+  <section id="panel-kakao" role="tabpanel" aria-labelledby="tab-kakao" hidden>
+    <p class="mini-panel-head" style="text-align:center;margin-bottom:16px;">
+      브리핑 페이지에서 "카카오톡으로 보내기"를 누르면, 도움됨 표시한 기사 전체가 메시지 1건으로 이어져 "나와의 채팅"에 도착합니다. (예시 3건)
+    </p>
+
+    <div class="kakao-chat-frame">
+      <div class="kakao-chat-title-row"><span class="kakao-chat-title">2026년 9월 11일 금요일</span></div>
+
+      <div class="msg-row">
+        <div class="msg-avatar">B</div>
+        <div class="msg-col">
+          <div class="msg-sender">브랜드 전략 브리핑</div>
+          <div class="msg-bubble-text">
+            <div class="msg-intro">2026년 09월 11일 (금)<br>마케팅 주요뉴스 클리핑</div>
+
+            <div class="msg-article">
+              <div class="msg-quote">① '가격이 아니라 정체성을 바꾼다'</div>
+              <div class="msg-title-bold">OO뷰티, 저가 이미지 벗고 클린뷰티로 재포지셔닝</div>
+              <div class="msg-body-text">OO뷰티가 성분 전면 공개와 패키지 개편을 통해 2030 가치소비층을 겨냥한 클린뷰티 브랜드로 정체성을 전환했습니다. 기존 저가 라인은 별도 서브 브랜드로 분리해 가격 이미지가 겹치지 않도록 설계했습니다. 저가 경쟁에서 벗어나 성분과 지속가능성을 중시하는 소비층으로 표적을 재정의한 사례로, 가격을 낮추는 대신 브랜드 정체성 자체를 바꿔 새로운 고객층을 확보하려는 포지셔닝 전략으로 해석됩니다.</div>
+              <div class="msg-link-text">https://example.com/news/br-001</div>
+            </div>
+
+            <div class="msg-article">
+              <div class="msg-quote">② '같은 브랜드로는 남성을 못 잡는다'</div>
+              <div class="msg-title-bold">C코스메틱, 2030 남성 시장으로 표적 확장</div>
+              <div class="msg-body-text">C코스메틱이 기존 여성 중심 라인 외에 2030 남성 전용 스킨케어 라인을 별도 브랜드명으로 출시했습니다. 유통은 온라인 자사몰과 남성 전용 편집숍 중심으로 한정했습니다. 기존 브랜드 이미지가 여성 소비자에게 고착돼 있어 동일 브랜드로는 남성 고객 확보가 어렵다고 판단한 것으로, 표적시장을 넓힐 때 브랜드를 그대로 쓸지 분리할지를 보여주는 사례로 해석됩니다.</div>
+              <div class="msg-link-text">https://example.com/news/br-004</div>
+            </div>
+
+            <div class="msg-article msg-article-last">
+              <div class="msg-quote">③ '이벤트는 열었는데, 경험은 설계했나'</div>
+              <div class="msg-title-bold">K뷰티, 강남 팝업스토어 오픈</div>
+              <div class="msg-body-text">K뷰티가 강남에 팝업스토어를 열었지만 운영 기간과 장소 안내 위주로만 알려졌습니다. 어떤 고객 경험을 설계했는지에 대한 설명은 상대적으로 얕은 편입니다. 팝업스토어 자체는 화제성이 있어도, 그 경험이 브랜드 포지셔닝과 어떻게 연결되는지가 드러나야 전략적으로 참고할 만한 사례가 된다는 점을 보여줍니다.</div>
+              <div class="msg-link-text">https://example.com/news/rv-007</div>
+            </div>
+          </div>
+        </div>
+        <div class="msg-time">오전 7:03</div>
+      </div>
+    </div>
+
+    <div class="footnote">
+      도움됨 표시한 기사 전체가 메시지 1건에 이어서 담깁니다.<br>
+      메시지가 카카오 길이 제한을 넘으면 기사 사이 경계에서만 다음 메시지로 넘어가며, 기사 중간에서는 잘리지 않습니다.
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  var ARTICLES = [
+    {
+      id:'a1',
+      title:'OO뷰티, 저가 이미지 벗고 클린뷰티로 재포지셔닝',
+      quote:'가격이 아니라 정체성을 바꾼다',
+      tags:['브랜드전략','포지셔닝','뷰티'],
+      summary:'OO뷰티가 성분 전면 공개와 패키지 개편을 통해 2030 가치소비층을 겨냥한 클린뷰티 브랜드로 정체성을 전환했다. 기존 저가 라인은 별도 서브 브랜드로 분리해 가격 이미지가 겹치지 않도록 설계했다. 회사 측은 이번 전환의 배경으로 저가 경쟁에서 벗어나 성분과 지속가능성을 중시하는 소비층으로 표적을 재설정할 필요성을 들었다. 매장 진열과 온라인 상세페이지도 성분 스토리텔링 중심으로 새로 구성했다.',
+      source:'OO경제', time:'2026.09.10 18:20',
+      link:'https://example.com/news/br-001'
+    },
+    {
+      id:'a2',
+      title:'A이커머스, 지방 소상공인 전용 입점 프로그램 신설',
+      quote:'수수료보다 중요한 건 진입장벽',
+      tags:['유통전략','이커머스'],
+      summary:'A이커머스가 수수료 인하와 전담 MD 배정을 포함한 입점 프로그램을 공개했다. 초기 목표는 입점사 200곳 확보다. 기존에는 수도권 중심 판매자 비중이 높았는데, 이번 프로그램은 지방 소재 소상공인의 진입장벽을 낮추는 데 초점을 맞췄다. 입점 심사 절차도 간소화해 평균 심사 기간을 기존보다 단축했다고 회사 측은 설명했다.',
+      source:'OO데일리', time:'2026.09.10 09:05',
+      link:'https://example.com/news/br-002'
+    },
+    {
+      id:'a3',
+      title:'B리테일, 구독형 정기배송 가격모델 도입 배경',
+      quote:'할인 대신 구독, 이탈을 막는 방법',
+      tags:['가격전략','고객경험'],
+      summary:'B리테일이 월 구독료 기반 정기배송 모델을 시범 도입했다. 일회성 할인 대신 예측 가능한 재구매 구조를 목표로 한다고 밝혔다. 기존에는 시즌별 프로모션 할인으로 재구매를 유도해왔으나 할인 종료 시점마다 이탈이 반복되는 문제가 있었다고 회사는 설명했다. 구독 요금제는 배송 주기와 구성품을 고객이 직접 조정할 수 있도록 설계됐다.',
+      source:'OO비즈', time:'2026.09.10 15:40',
+      link:'https://example.com/news/br-003'
+    },
+    {
+      id:'a4',
+      title:'C코스메틱, 2030 남성 시장으로 표적 확장',
+      quote:'같은 브랜드로는 남성을 못 잡는다',
+      tags:['표적시장','시장세분화','뷰티'],
+      summary:'C코스메틱이 기존 여성 중심 라인 외에 2030 남성 전용 스킨케어 라인을 출시했다. 별도 브랜드명과 유통 채널을 적용했다. 기존 브랜드 이미지가 여성 소비자에게 고착돼 있어 동일 브랜드로는 남성 고객 확보가 어렵다고 판단해 서브 브랜드 분리를 택했다고 회사 측은 전했다. 초기 유통은 온라인 자사몰과 남성 전용 편집숍 중심으로 한정했다.',
+      source:'OO경제', time:'2026.09.10 11:12',
+      link:'https://example.com/news/br-004'
+    },
+    {
+      id:'a5',
+      title:'D브랜드, 해외 진출에 D2C 대신 현지 리테일러 제휴 선택',
+      quote:'낯선 시장에선 내 힘보다 남의 신뢰',
+      tags:['해외진출','유통전략'],
+      summary:'D브랜드가 동남아 진출 시 자사몰 대신 현지 대형 리테일러 입점을 우선했다. 초기 인지도 확보를 유통 파트너십으로 해결하려는 전략으로 풀이된다. 회사는 브랜드 인지도가 낮은 신규 시장에서 자사몰만으로는 트래픽 확보가 어렵다고 보고, 현지에서 이미 신뢰를 확보한 유통 채널을 활용하는 방식을 택했다고 설명했다. 자사몰 운영은 인지도가 어느 정도 쌓인 이후 단계적으로 확대할 계획이다.',
+      source:'OO무역신문', time:'2026.09.09 20:03',
+      link:'https://example.com/news/br-005'
+    },
+    {
+      id:'a6',
+      title:'E사, 인플루언서 마케팅에서 장기 앰배서더 체제로 전환',
+      quote:'메시지는 사람이 아니라 시간이 만든다',
+      tags:['프로모션전략','고객경험'],
+      summary:'E사가 단발성 협찬 대신 1년 단위 앰배서더 계약으로 프로모션 방식을 바꿨다. 브랜드 메시지 일관성을 이유로 들었다. 기존에는 매 시즌 다른 인플루언서와 단기 협찬을 진행했으나 메시지 톤이 자주 바뀌어 브랜드 정체성이 흐려진다는 내부 판단이 있었다고 한다. 장기 계약 체결 이후에는 광고 콘텐츠 기획 단계부터 앰배서더가 참여하는 구조로 바뀌었다.',
+      source:'OO미디어', time:'2026.09.10 07:55',
+      link:'https://example.com/news/br-006'
+    },
+    {
+      id:'a7',
+      title:'F플랫폼, AI 추천 기반으로 검색 광고 상품 개편',
+      quote:'입찰가보다 관련성이 이기는 광고',
+      tags:['AI마케팅','경쟁전략'],
+      summary:'F플랫폼이 키워드 입찰형 광고 대신 AI 추천 노출 상품을 새로 도입했다. 광고주 타겟팅 정밀도를 높이려는 목적이라고 설명했다. 기존 입찰 방식은 예산이 큰 광고주에게 노출이 쏠리는 문제가 있었는데, 새 상품은 사용자 행동 데이터를 기반으로 관련성이 높은 광고주에게 우선 노출된다고 회사는 밝혔다. 중소형 광고주도 예산과 무관하게 노출 기회를 얻을 수 있다는 점을 특징으로 강조했다.',
+      source:'OO테크', time:'2026.09.10 13:27',
+      link:'https://example.com/news/br-007'
+    }
+  ];
+
+  var REVIEW_EXTRA = [
+    {
+      id:'r1', title:'OO브랜드, 여름 프로모션 20% 할인 행사 진행',
+      quote:'할인율만 남고 이유는 없다',
+      tags:['프로모션전략'], score:38,
+      reason:'광고성·보도자료',
+      reasonDesc:'할인율과 행사 기간만 안내할 뿐, 왜 이 시점에 이런 할인을 설계했는지 전략적 배경 설명이 없어 광고성으로 분류되어 제외되었습니다.',
+      source:'OO브랜드 보도자료', time:'2026.09.10 10:00',
+      link:'https://example.com/news/rv-001'
+    },
+    {
+      id:'r2', title:'OO뷰티, 클린뷰티 신제품 발표회 개최',
+      quote:'같은 뉴스, 다른 이름 — 셋 중 하나만',
+      tags:['뷰티','브랜드전략'], score:52,
+      reason:'중복 기사',
+      reasonDesc:'같은 이슈를 다룬 3건 중 가장 구체적인 OO경제 보도(최종 선정 ①번)만 채택되고, 이 기사를 포함한 나머지 2건은 중복으로 제외되었습니다.',
+      source:'OO투데이', time:'2026.09.10 19:05',
+      link:'https://example.com/news/rv-002'
+    },
+    {
+      id:'r3', title:'G브랜드 대표, 창업 10년 인터뷰',
+      quote:'창업 스토리는 전략이 아니다',
+      tags:['브랜드전략'], score:41,
+      reason:'전략성 부족',
+      reasonDesc:'창업 계기와 소회 위주의 인터뷰로, 구체적인 시장·가격·유통 전략 설명이 부족해 실무 활용도가 낮게 평가되었습니다.',
+      source:'OO위클리', time:'2026.09.09 08:30',
+      link:'https://example.com/news/rv-003'
+    },
+    {
+      id:'r4', title:'H사, 3분기 매출 전년 대비 30% 증가 발표',
+      quote:'결과는 있는데 이유가 없다',
+      tags:['경쟁전략'], score:35,
+      reason:'단순 실적 발표',
+      reasonDesc:'매출 증가라는 결과만 전달할 뿐 어떤 전략적 선택이 그 결과로 이어졌는지 설명이 없어 낮게 평가되었습니다.',
+      source:'OO경제', time:'2026.09.10 16:20',
+      link:'https://example.com/news/rv-004'
+    },
+    {
+      id:'r5', title:'I편의점, 여름 한정판 굿즈 출시',
+      quote:'화제는 됐지만 브랜드는 안 남는다',
+      tags:['프로모션전략'], score:33,
+      reason:'화제성 위주',
+      reasonDesc:'단발성 화제 이벤트로, 표적 고객이나 브랜드 포지셔닝과의 연결점이 뚜렷하지 않아 제외되었습니다.',
+      source:'OO뉴스', time:'2026.09.10 12:00',
+      link:'https://example.com/news/rv-005'
+    },
+    {
+      id:'r6', title:'J플랫폼, 앱 UI 개편 업데이트 공지',
+      quote:'기능 업데이트는 뉴스가 아니다',
+      tags:['AI마케팅'], score:29,
+      reason:'제품 공지성',
+      reasonDesc:'기능 변경 공지에 가까워 마케팅·브랜드 전략 관점의 해석 여지가 적다고 판단되어 제외되었습니다.',
+      source:'OO테크', time:'2026.09.09 14:45',
+      link:'https://example.com/news/rv-006'
+    },
+    {
+      id:'r7', title:'K뷰티, 강남 팝업스토어 오픈',
+      quote:'이벤트는 열었는데, 경험은 설계했나',
+      tags:['뷰티','고객경험'], score:44,
+      reason:'단발성 이벤트',
+      reasonDesc:'팝업스토어 운영 자체는 흥미롭지만 기간·장소 안내 위주여서, 어떤 고객 경험을 설계했는지에 대한 설명이 얕다고 평가되었습니다.',
+      source:'OO매거진', time:'2026.09.10 09:15',
+      link:'https://example.com/news/rv-007'
+    },
+    {
+      id:'r8', title:'L사, ESG 경영 보고서 발간',
+      quote:'보고서는 있는데 마케팅은 없다',
+      tags:['경쟁전략'], score:31,
+      reason:'연관성 낮음',
+      reasonDesc:'ESG 경영 성과 보고 성격이 강해 마케팅·브랜드 전략과의 직접적인 연관성이 낮다고 판단되어 제외되었습니다.',
+      source:'OO데일리', time:'2026.09.09 17:50',
+      link:'https://example.com/news/rv-008'
+    }
+  ];
+
+  var COLLECT_SAMPLE = [
+    {title:'OO뷰티, 클린뷰티 라인 신제품 출시', link:'https://example.com/news/cl-001'},
+    {title:'OO뷰티, 신제품 클린뷰티 라인 공개', link:'https://example.com/news/cl-002'},
+    {title:'OO뷰티, 클린뷰티 신제품 발표회 개최', link:'https://example.com/news/cl-003'},
+    {title:'가을 프로모션 대전 시작…유통업계 들썩', link:'https://example.com/news/cl-004'},
+    {title:'연예인 마케팅과 인플루언서 마케팅, 무엇이 나을까', link:'https://example.com/news/cl-005'},
+    {title:'OO증권, 3분기 실적 컨센서스 상회', link:'https://example.com/news/cl-006'},
+    {title:'여름철 식품 유통기한 관리 요령', link:'https://example.com/news/cl-007'},
+    {title:'A이커머스, 지방 소상공인 전용 입점 프로그램 신설', link:'https://example.com/news/cl-008'},
+    {title:'택배 물류센터 화재, 일부 지역 배송 지연', link:'https://example.com/news/cl-009'},
+    {title:'OO증권 리포트: 화장품 업종 밸류에이션 분석', link:'https://example.com/news/cl-010'}
+  ];
+
+  var ALL_RATEABLE = ARTICLES.concat(REVIEW_EXTRA);
+
+  var METER_TAGS = ['브랜드전략','표적시장','뷰티','유통전략','가격전략'];
+  var BASELINE = {
+    '브랜드전략': {good:9, total:12},
+    '표적시장':   {good:8, total:10},
+    '뷰티':       {good:7, total:9},
+    '유통전략':   {good:6, total:11},
+    '가격전략':   {good:4, total:9}
+  };
+  var RATINGS_KEY = 'briefing_mockup_ratings_v2';
+
+  function getRatings(){
+    try { return JSON.parse(localStorage.getItem(RATINGS_KEY) || '{}'); }
+    catch(e){ return {}; }
+  }
+  function setRatings(r){
+    try { localStorage.setItem(RATINGS_KEY, JSON.stringify(r)); }
+    catch(e){}
+  }
+
+  function computeTagCounts(ratings){
+    var counts = {};
+    Object.keys(BASELINE).forEach(function(t){
+      counts[t] = {good:BASELINE[t].good, total:BASELINE[t].total};
+    });
+    ALL_RATEABLE.forEach(function(art){
+      var r = ratings[art.id];
+      if (!r) return;
+      art.tags.forEach(function(t){
+        if (!counts[t]) counts[t] = {good:0, total:0};
+        counts[t].total += 1;
+        if (r === 'good') counts[t].good += 1;
+      });
+    });
+    return counts;
+  }
+
+  function renderCards(){
+    var wrap = document.getElementById('cards');
+    var ratings = getRatings();
+    wrap.innerHTML = ARTICLES.map(function(art){
+      var tagsHtml = art.tags.map(function(t){ return '<span class="tag">'+t+'</span>'; }).join('');
+      var r = ratings[art.id];
+      var goodActive = r === 'good';
+      var badActive = r === 'bad';
+      var stateText = r === 'good' ? '평가: 도움됨' : (r === 'bad' ? '평가: 별로예요' : '아직 평가하지 않음');
+      return (
+        '<article class="card" data-id="'+art.id+'">'+
+          '<div class="tags">'+tagsHtml+'</div>'+
+          '<h3>'+art.title+'</h3>'+
+          '<p>'+art.summary+'</p>'+
+          '<div class="meta">'+art.source+' · '+art.time+'</div>'+
+          '<div class="card-foot">'+
+            '<a class="link" href="'+art.link+'" target="_blank" rel="noopener">원문보기 ↗</a>'+
+            '<div class="fb-group">'+
+              '<span class="fb-state">'+stateText+'</span>'+
+              '<button class="fb-btn" data-value="good" data-active="'+goodActive+'" aria-pressed="'+goodActive+'">도움됨</button>'+
+              '<button class="fb-btn" data-value="bad" data-active="'+badActive+'" aria-pressed="'+badActive+'">별로예요</button>'+
+            '</div>'+
+          '</div>'+
+        '</article>'
+      );
+    }).join('');
+
+    attachFeedback(wrap);
+  }
+
+  function attachFeedback(container){
+    container.querySelectorAll('.fb-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var host = btn.closest('[data-id]');
+        var id = host.getAttribute('data-id');
+        var value = btn.getAttribute('data-value');
+        var ratings = getRatings();
+        ratings[id] = (ratings[id] === value) ? undefined : value;
+        if (ratings[id] === undefined) delete ratings[id];
+        setRatings(ratings);
+        refreshAll();
+      });
+    });
+  }
+
+  function renderReviewList(){
+    var host = document.getElementById('reviewRows');
+    var ratings = getRatings();
+    host.innerHTML = REVIEW_EXTRA.map(function(art){
+      var tagsHtml = art.tags.map(function(t){ return '<span class="tag">'+t+'</span>'; }).join('');
+      var r = ratings[art.id];
+      var goodActive = r === 'good';
+      var badActive = r === 'bad';
+      var stateText = r === 'good' ? '평가: 도움됨' : (r === 'bad' ? '평가: 별로예요' : '아직 평가하지 않음');
+      return (
+        '<div class="review-card" data-id="'+art.id+'">'+
+          '<div class="review-top">'+
+            '<span class="reason-badge">'+art.reason+'</span>'+
+            '<span class="score-text">점수 '+art.score+'/100</span>'+
+          '</div>'+
+          '<div class="tags">'+tagsHtml+'</div>'+
+          '<h4>'+art.title+'</h4>'+
+          '<p class="reason-desc">'+art.reasonDesc+'</p>'+
+          '<div class="meta">'+art.source+' · '+art.time+'</div>'+
+          '<div class="card-foot">'+
+            '<a class="link" href="'+art.link+'" target="_blank" rel="noopener">원문보기 ↗</a>'+
+            '<div class="fb-group">'+
+              '<span class="fb-state">'+stateText+'</span>'+
+              '<button class="fb-btn" data-value="good" data-active="'+goodActive+'" aria-pressed="'+goodActive+'">도움됨</button>'+
+              '<button class="fb-btn" data-value="bad" data-active="'+badActive+'" aria-pressed="'+badActive+'">별로예요</button>'+
+            '</div>'+
+          '</div>'+
+        '</div>'
+      );
+    }).join('');
+    attachFeedback(host);
+  }
+
+  function renderCollectList(){
+    var host = document.getElementById('collectRows');
+    host.innerHTML = COLLECT_SAMPLE.map(function(it){
+      return (
+        '<a class="collect-link" href="'+it.link+'" target="_blank" rel="noopener">'+
+          '<span>'+it.title+'</span>'+
+          '<span class="chev">›</span>'+
+        '</a>'
+      );
+    }).join('');
+  }
+
+  function refreshAll(){
+    renderCards();
+    renderReviewList();
+    renderMeters();
+    renderKakao();
+  }
+
+  function renderMeters(){
+    var host = document.getElementById('meters');
+    var ratings = getRatings();
+    var counts = computeTagCounts(ratings);
+    host.innerHTML = METER_TAGS.map(function(tag){
+      var c = counts[tag] || {good:0,total:0};
+      var pct = c.total ? Math.round((c.good / c.total) * 100) : 0;
+      return (
+        '<div class="meter-row">'+
+          '<div class="meter-label"><b>'+tag+'</b><span class="meter-num">'+pct+'% · '+c.good+'/'+c.total+'</span></div>'+
+          '<div class="meter-track"><div class="meter-fill" style="width:'+pct+'%"></div></div>'+
+        '</div>'
+      );
+    }).join('');
+  }
+
+  var kakaoPreviewOpen = false;
+
+  function renderKakao(){
+    var ratings = getRatings();
+    var liked = ALL_RATEABLE.filter(function(a){ return ratings[a.id] === 'good'; });
+    var desc = document.getElementById('kakaoDesc');
+    var btn = document.getElementById('kakaoBtn');
+    var preview = document.getElementById('kakaoPreview');
+
+    if (liked.length === 0){
+      desc.textContent = '도움됨으로 표시한 기사가 없습니다.';
+      btn.disabled = true;
+      btn.textContent = '카카오톡으로 보내기';
+      kakaoPreviewOpen = false;
+      preview.hidden = true;
+      return;
+    }
+
+    desc.textContent = '도움됨 표시 ' + liked.length + '건: ' + liked.map(function(a){ return a.title; }).join(' · ');
+    btn.disabled = false;
+    btn.textContent = '카카오톡으로 보내기 (' + liked.length + ')';
+
+    if (kakaoPreviewOpen){
+      preview.hidden = false;
+      var CIRCLED = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩'];
+      preview.innerHTML =
+        '<div class="msg-intro">오늘의 브리핑 중 도움됨 표시하신 기사 ' + liked.length + '건입니다.</div>' +
+        liked.map(function(a, idx){
+          var num = CIRCLED[idx] || ('(' + (idx+1) + ')');
+          var body = a.summary || a.reasonDesc || '';
+          var last = idx === liked.length - 1 ? ' msg-article-last' : '';
+          return (
+            '<div class="msg-article' + last + '">' +
+              '<div class="msg-quote">' + num + ' \'' + a.quote + '\'</div>' +
+              '<div class="msg-title-bold">' + a.title + '</div>' +
+              '<div class="msg-body-text">' + body + '</div>' +
+              '<div class="msg-link-text">' + a.link + '</div>' +
+            '</div>'
+          );
+        }).join('') +
+        '<div class="pv-note">지금은 전송될 내용의 미리보기입니다. 실제 카카오톡 전송은 카카오 로그인 연동 후 Phase 4에서 제공됩니다.</div>';
+    } else {
+      preview.hidden = true;
+    }
+  }
+
+  var TAB_IDS = ['email','app','kakao'];
+  function switchTab(target){
+    TAB_IDS.forEach(function(id){
+      var active = id === target;
+      document.getElementById('tab-'+id).setAttribute('aria-selected', String(active));
+      document.getElementById('panel-'+id).hidden = !active;
+    });
+  }
+
+  document.getElementById('tab-email').addEventListener('click', function(){ switchTab('email'); });
+  document.getElementById('tab-app').addEventListener('click', function(){ switchTab('app'); });
+  document.getElementById('tab-kakao').addEventListener('click', function(){ switchTab('kakao'); });
+  document.getElementById('cta-open').addEventListener('click', function(e){
+    e.preventDefault();
+    switchTab('app');
+  });
+  document.getElementById('kakaoBtn').addEventListener('click', function(){
+    kakaoPreviewOpen = !kakaoPreviewOpen;
+    renderKakao();
+  });
+
+  var tileCollect = document.getElementById('tileCollect');
+  var tileReview = document.getElementById('tileReview');
+  var tileFinal = document.getElementById('tileFinal');
+  var collectPanel = document.getElementById('collectList');
+  var reviewPanel = document.getElementById('reviewList');
+
+  function setCaret(tile, expanded){
+    var caret = tile.querySelector('.stat-caret');
+    if (caret) caret.textContent = expanded ? '접기' : '예시 보기';
+  }
+
+  tileCollect.addEventListener('click', function(){
+    var expanded = tileCollect.getAttribute('aria-expanded') !== 'true';
+    tileCollect.setAttribute('aria-expanded', String(expanded));
+    collectPanel.hidden = !expanded;
+    setCaret(tileCollect, expanded);
+    if (expanded) collectPanel.scrollIntoView({behavior:'smooth', block:'nearest'});
+  });
+
+  tileReview.addEventListener('click', function(){
+    var expanded = tileReview.getAttribute('aria-expanded') !== 'true';
+    tileReview.setAttribute('aria-expanded', String(expanded));
+    reviewPanel.hidden = !expanded;
+    setCaret(tileReview, expanded);
+    if (expanded) reviewPanel.scrollIntoView({behavior:'smooth', block:'nearest'});
+  });
+
+  tileFinal.addEventListener('click', function(){
+    document.getElementById('cards').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  renderCards();
+  renderReviewList();
+  renderCollectList();
+  renderMeters();
+  renderKakao();
+})();
+</script>
+
+</body></html>

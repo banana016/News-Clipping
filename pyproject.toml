@@ -1,3 +1,21 @@
+[project]
+name = "news-briefing"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=0.68",
+    "requests>=2.32",
+    "supabase>=2.9",
+    "cryptography>=43.0",
+    "python-dotenv>=1.0",
+    "fastapi>=0.115",
+    "pydantic>=2.9",
+    "tzdata>=2024.2; sys_platform == 'win32'",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3", "uvicorn>=0.32"]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
