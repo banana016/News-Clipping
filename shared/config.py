@@ -20,7 +20,8 @@ except ImportError:  # python-dotenv is a dev convenience, not a hard requiremen
 
 
 def _get(name: str, default: str | None = None) -> str | None:
-    return os.environ.get(name, default)
+    val = os.environ.get(name)
+    return val if val else default
 
 
 def _get_bool(name: str, default: bool = False) -> bool:
