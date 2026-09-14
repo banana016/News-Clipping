@@ -40,4 +40,10 @@ jobs:
           BRIEFING_RECIPIENT_EMAIL: ${{ secrets.BRIEFING_RECIPIENT_EMAIL }}
           WEB_BASE_URL: ${{ vars.WEB_BASE_URL }}
           MAGIC_LINK_SECRET: ${{ secrets.MAGIC_LINK_SECRET }}
+          MIN_SELECT: ${{ vars.MIN_SELECT || '7' }}
+          MAX_SELECT: ${{ vars.MAX_SELECT || '10' }}
+          MIN_SCORE_THRESHOLD: ${{ vars.MIN_SCORE_THRESHOLD || '60' }}
+          WEIGHT_MIN_SAMPLES: ${{ vars.WEIGHT_MIN_SAMPLES || '5' }}
+          WEIGHT_MAX_ADJUSTMENT: ${{ vars.WEIGHT_MAX_ADJUSTMENT || '5' }}
+          RESEND_GUARD_DAYS: ${{ vars.RESEND_GUARD_DAYS || '7' }}
         run: python -m pipeline.run_pipeline
