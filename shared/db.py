@@ -85,7 +85,8 @@ def save_evaluations(evaluations: list[Evaluation]) -> None:
 
 def get_briefing_for_date(run_date: str) -> dict:
     """What the web app shows for a given day — selected + reviewed tiers."""
-    run = get_client().table("runs").select("*").eq("run_date", run_date).limit(1).execute()
+    run = (get_client().table("runs").select("*").eq("run_date", run_date)
+           .order("started_at", desc=True).limit(1).execute())
     if not run.data:
         return {"run": None, "selected": [], "reviewed": []}
     run_row = run.data[0]
