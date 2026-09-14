@@ -91,7 +91,7 @@ def get_briefing_for_date(run_date: str) -> dict:
     run_row = run.data[0]
 
     articles = (get_client().table("articles")
-                .select("*, evaluations(*)")
+                .select("*, evaluations!article_id(*)")
                 .eq("run_id", run_row["id"]).execute())
 
     selected = [a for a in articles.data if a.get("tier") == "selected"]
@@ -166,7 +166,7 @@ def get_liked_articles_for_kakao() -> list[dict]:
     if not liked_ids:
         return []
     articles = (get_client().table("articles")
-                .select("*, evaluations(*)")
+                .select("*, evaluations!article_id(*)")
                 .in_("id", liked_ids).execute())
     return articles.data
 
