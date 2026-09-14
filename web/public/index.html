@@ -99,8 +99,7 @@
   });
 
   function evalOf(row) {
-    const e = (row.evaluations && row.evaluations[0]) || {};
-    return e;
+    return row.evaluations || {};
   }
 
   function tagsHtml(tags) {

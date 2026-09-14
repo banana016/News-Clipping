@@ -69,10 +69,12 @@ def main() -> int:
     tag_weights = db.get_all_tag_weights()
     evaluations = weights.apply_weights(evaluations, tag_weights)
 
+    by_id: dict[str, Article] = {a.id: a for a in candidates}
+    evaluations = dedup.resolve_cross_batch_duplicates(evaluations, by_id)
+
     # 9. select final 7-10
     result = selector.select(evaluations)
     selected_ids = {e.article_id for e in result.selected}
-    by_id: dict[str, Article] = {a.id: a for a in candidates}
 
     for article_id in selected_ids:
         db.update_article_tier(article_id, "selected")

@@ -98,7 +98,7 @@ def post_kakao_send(body: KakaoSendBody):
 
     payloads = []
     for row in liked_rows:
-        evaluation_row = (row.get("evaluations") or [{}])[0]
+        evaluation_row = row.get("evaluations") or {}
         ev = Evaluation(
             article_id=row["id"], strategic_relevance=0, stp_4p_relevance=0,
             practical_applicability=0, market_impact=0, recency=0, credibility=0,
