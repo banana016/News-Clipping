@@ -1,12 +1,21 @@
 """
-The always-on half of the system (Vercel). Three endpoints:
+The always-on half of the system (Vercel). Endpoints:
 
-  GET  /api/briefing?token=...   -> today's briefing data (magic-link gated)
+  GET  /api/briefing?token=...   -> this batch's briefing data (magic-link
+                                     gated - the token pins one specific
+                                     clipping run, not a calendar date)
   POST /api/feedback             -> record 도움됨/별로예요, update tag_weights
-  POST /api/kakao-send           -> send every currently-liked, not-yet-sent
-                                     article as Kakao text message(s)
-  GET  /api/liked-full-text      -> every currently-liked article as one
-                                     copy/paste-able text block
+  POST /api/kakao-send           -> send this batch's not-yet-sent, non-bad
+                                     articles as Kakao text message(s)
+  GET  /api/liked-full-text      -> this batch's non-bad (도움됨 + 미평가)
+                                     articles as one copy/paste-able text
+                                     block
+
+Every one of these is scoped to a single clipping run (batch): the token
+carries the batch's run_id, and every query below filters by that run_id
+first before looking at feedback status. A batch's Kakao summary must never
+include another batch's articles, and regenerating it must never depend on
+whether it (or a previous batch) was already viewed, copied, or sent.
 
 Static page: web/public/index.html (adapted from the approved mockup) reads
 `token` from its own URL and calls these.
@@ -36,17 +45,23 @@ def _require_token(token: str | None) -> dict:
     if not token:
         raise HTTPException(status_code=401, detail="missing token")
     try:
-        return verify_token(token)
+        payload = verify_token(token)
     except InvalidToken as exc:
         raise HTTPException(status_code=401, detail=str(exc)) from exc
+    if "run_id" not in payload:
+        # Pre-migration links carried {"run_date": ...} instead of a batch
+        # id - still cryptographically valid, but there's no run_id to scope
+        # queries by. Treat as expired; they age out within magic_link_ttl_days.
+        raise HTTPException(status_code=401, detail="outdated link format - use the latest email")
+    return payload
 
 
 @app.get("/api/briefing")
 def get_briefing(token: str | None = None):
     payload = _require_token(token)
-    data = db.get_briefing_for_date(payload["run_date"])
+    data = db.get_briefing_for_run(payload["run_id"])
     if data["run"] is None:
-        raise HTTPException(status_code=404, detail="no briefing for this date")
+        raise HTTPException(status_code=404, detail="no briefing for this run")
     return data
 
 
@@ -58,9 +73,11 @@ class FeedbackBody(BaseModel):
 
 @app.post("/api/feedback")
 def post_feedback(body: FeedbackBody):
-    _require_token(body.token)
+    payload = _require_token(body.token)
     if body.rating not in ("good", "bad"):
         raise HTTPException(status_code=400, detail="rating must be 'good' or 'bad'")
+    if db.get_article_run_id(body.article_id) != payload["run_id"]:
+        raise HTTPException(status_code=404, detail="article does not belong to this batch")
 
     db.record_feedback(body.article_id, body.rating)
 
@@ -95,24 +112,30 @@ def _build_kakao_payloads(liked_rows: list[dict]) -> list[dict]:
 
 @app.get("/api/liked-full-text")
 def get_liked_full_text(token: str | None = None):
-    _require_token(token)
+    payload = _require_token(token)
 
-    liked_rows = db.get_liked_articles()
-    if not liked_rows:
-        return {"ok": True, "count": 0, "text": "", "message": "도움됨으로 표시된 기사가 없습니다."}
+    # Scoped to this one batch only - see get_batch_articles_for_kakao.
+    # Always regenerable: never filtered by whether it (or any other batch)
+    # was already viewed, copied, or sent.
+    batch_rows = db.get_batch_articles_for_kakao(payload["run_id"])
+    if not batch_rows:
+        return {"ok": True, "count": 0, "text": "",
+                "message": "이 회차에는 도움됨 또는 미평가 상태의 기사가 없습니다."}
 
-    payloads = _build_kakao_payloads(liked_rows)
-    intro = f"도움됨 표시하신 기사 {len(payloads)}건입니다."
+    payloads = _build_kakao_payloads(batch_rows)
+    intro = f"이번 회차 기사 {len(payloads)}건입니다 (별로예요 제외)."
     return {"ok": True, "count": len(payloads), "text": build_full_text(intro, payloads)}
 
 
 @app.post("/api/kakao-send")
 def post_kakao_send(body: KakaoSendBody):
-    _require_token(body.token)
+    payload = _require_token(body.token)
 
-    liked_rows = db.get_liked_articles_for_kakao()
+    batch_rows = db.get_batch_articles_for_kakao(payload["run_id"])
+    already_sent = db.already_kakao_sent_ids()
+    liked_rows = [row for row in batch_rows if row["id"] not in already_sent]
     if not liked_rows:
-        return {"ok": True, "sent_count": 0, "message": "도움됨으로 표시된 새 기사가 없습니다."}
+        return {"ok": True, "sent_count": 0, "message": "이 회차에는 새로 발송할 기사가 없습니다."}
 
     tokens = db.get_kakao_tokens()
     if tokens is None:

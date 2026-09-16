@@ -26,10 +26,15 @@ def build_briefing(selected: list[tuple[Article, Evaluation]]) -> list[BriefingA
     return [BriefingArticle(article=a, evaluation=e) for a, e in selected]
 
 
-def render_notification_email(run_date: str, collected_n: int, reviewed_n: int, selected_n: int) -> tuple[str, str]:
+def render_notification_email(run_id: str, run_date: str, collected_n: int, reviewed_n: int,
+                               selected_n: int) -> tuple[str, str]:
     """Returns (subject, html_body). Kept intentionally simple/table-based —
-    email clients don't reliably support modern CSS (flexbox, @import fonts)."""
-    link = briefing_url(run_date)
+    email clients don't reliably support modern CSS (flexbox, @import fonts).
+
+    The link is keyed on run_id (the specific batch), not run_date — a date
+    can have more than one run, and the link must always resolve to exactly
+    the batch this email was actually sent for."""
+    link = briefing_url(run_id)
     subject = f"오늘의 마케팅·브랜드 전략 브리핑 — {run_date}"
 
     html = f"""\

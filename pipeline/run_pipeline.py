@@ -88,7 +88,7 @@ def main() -> int:
     # 10-12. build + send notification email (DRY_RUN skips the actual send)
     selected_pairs = [(by_id[e.article_id], e) for e in result.selected if e.article_id in by_id]
     subject, html = briefing.render_notification_email(
-        run_date, len(collected), len(candidates), len(result.selected),
+        run_id, run_date, len(collected), len(candidates), len(result.selected),
     )
     email_ok = emailer.send_email(subject, html)
 

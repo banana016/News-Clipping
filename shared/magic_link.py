@@ -35,9 +35,13 @@ def _b64decode(data: str) -> bytes:
     return base64.urlsafe_b64decode(data + padding)
 
 
-def issue_token(run_date: str) -> str:
-    """run_date: 'YYYY-MM-DD' — the briefing this link points to."""
-    payload = {"run_date": run_date, "exp": int(time.time()) + settings.magic_link_ttl_days * 86400}
+def issue_token(run_id: str) -> str:
+    """run_id: the specific clipping run (batch) this link points to — not a
+    calendar date. A date can have more than one run (manual retry, a
+    workflow_dispatch re-run after a failure), so the link has to pin the
+    exact batch or a retry would silently swap which batch's articles /
+    feedback / Kakao summary the link resolves to."""
+    payload = {"run_id": run_id, "exp": int(time.time()) + settings.magic_link_ttl_days * 86400}
     payload_bytes = json.dumps(payload, separators=(",", ":")).encode("utf-8")
     signature = hmac.new(_secret(), payload_bytes, hashlib.sha256).hexdigest()
     return f"{_b64encode(payload_bytes)}.{signature}"
@@ -61,5 +65,5 @@ def verify_token(token: str) -> dict:
     return payload
 
 
-def briefing_url(run_date: str) -> str:
-    return f"{settings.web_base_url}/briefing?token={issue_token(run_date)}"
+def briefing_url(run_id: str) -> str:
+    return f"{settings.web_base_url}/briefing?token={issue_token(run_id)}"

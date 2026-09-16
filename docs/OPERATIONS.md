@@ -11,10 +11,13 @@ UTC 기준)에 자동 실행됩니다. Actions 탭에서 수동 실행(`workflow
 - **어디서 실패했는지**: GitHub Actions 실행 로그가 1차 정보원입니다.
   `runs` 테이블(Supabase)의 `status`/`error_message` 컬럼도 함께 확인하세요.
 - **이메일 발송만 실패**: `runs.status = 'done_email_failed'`로 기록되고
-  분석 결과는 정상 저장되어 있습니다. 웹앱 URL을 알고 있다면 그날의 매직링크를
-  수동으로 발급해 확인할 수 있습니다:
+  분석 결과는 정상 저장되어 있습니다. `runs` 테이블에서 실패한 실행의 `id`
+  (run_id — 즉 그 회차의 batch_id)를 확인한 뒤, 그 값으로 매직링크를 수동
+  발급해 확인할 수 있습니다. 링크는 run_id 단위로 발급되므로(같은 날짜에
+  재시도로 여러 run이 생겨도 서로 섞이지 않습니다), 반드시 실패한 실행의
+  정확한 `id`를 넣어야 합니다:
   ```bash
-  python -c "from shared.magic_link import briefing_url; print(briefing_url('2026-09-11'))"
+  python -c "from shared.magic_link import briefing_url; print(briefing_url('<runs.id>'))"
   ```
 - **수집/평가 단계 실패**: `runs.status = 'failed'`. NAVER/Claude API 키 만료나
   요청 한도 초과가 가장 흔한 원인입니다. 콘솔에서 키 상태를 먼저 확인하세요.
