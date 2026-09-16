@@ -123,7 +123,8 @@ def get_liked_full_text(token: str | None = None):
                 "message": "이 회차에는 도움됨 또는 미평가 상태의 기사가 없습니다."}
 
     payloads = _build_kakao_payloads(batch_rows)
-    intro = f"이번 회차 기사 {len(payloads)}건입니다 (별로예요 제외)."
+    run_date = db.get_run_date(payload["run_id"]) or ""
+    intro = f"{run_date[2:]} 마케팅 뉴스 클리핑"  # "2026-09-16" -> "26-09-16"
     return {"ok": True, "count": len(payloads), "text": build_full_text(intro, payloads)}
 
 

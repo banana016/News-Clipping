@@ -120,7 +120,7 @@ def refresh_access_token(refresh_token: str) -> KakaoTokens:
 
 def _render_article(i: int, art: dict) -> str:
     num = CIRCLED_DIGITS[i] if i < len(CIRCLED_DIGITS) else f"({i + 1})"
-    return f"{num} '{art['quote']}'\n{art['title']}\n\n{art['body']}\n\n{art['link']}"
+    return f"{num} '{art['quote']}'\n{art['title']}\n\n{art['body']}\n{art['link']}"
 
 
 def build_full_text(intro: str, liked_articles: list[dict]) -> str:

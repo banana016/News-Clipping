@@ -109,6 +109,14 @@ def save_evaluations(evaluations: list[Evaluation]) -> None:
     _run(get_client().table("evaluations").insert(rows))
 
 
+def get_run_date(run_id: str) -> str | None:
+    """Just the 'YYYY-MM-DD' this batch was analyzed/emailed on, for display
+    (e.g. the Kakao summary's intro line) - a lighter query than
+    get_briefing_for_run when the article lists aren't needed."""
+    res = _run(get_client().table("runs").select("run_date").eq("id", run_id).limit(1))
+    return res.data[0]["run_date"] if res.data else None
+
+
 def get_briefing_for_run(run_id: str) -> dict:
     """What the web app shows for one specific clipping run (batch) — selected
     + reviewed tiers. Looked up by run_id, never by calendar date: a date can
