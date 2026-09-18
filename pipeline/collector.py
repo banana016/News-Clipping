@@ -15,6 +15,7 @@ import time
 from datetime import datetime, timedelta, timezone
 
 import requests
+from bs4 import BeautifulSoup
 
 from shared.config import settings
 from shared.keywords import SEARCH_QUERIES
@@ -25,6 +26,13 @@ logger = logging.getLogger(__name__)
 NAVER_ENDPOINT = "https://naverapihub.apigw.ntruss.com/search/v1/news"
 DISPLAY_PER_QUERY = 30
 MAX_RETRIES = 3
+
+MANUAL_FETCH_TIMEOUT = 10
+MANUAL_FETCH_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                  "(KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+}
+MANUAL_BODY_MAX_CHARS = 4000
 
 _TAG_RE = re.compile(r"<[^>]+>")
 
@@ -106,3 +114,67 @@ def collect(run_id: str, hours: int = 24) -> list[Article]:
 
     logger.info("collected %d unique articles across %d queries", len(merged), len(SEARCH_QUERIES))
     return merged
+
+
+def _extract_title(soup: BeautifulSoup, url: str) -> str:
+    og_title = soup.find("meta", attrs={"property": "og:title"})
+    if og_title and og_title.get("content"):
+        return og_title["content"].strip()
+    if soup.title and soup.title.string:
+        return soup.title.string.strip()
+    return url
+
+
+def _extract_published_at(soup: BeautifulSoup) -> datetime:
+    for attrs in (
+        {"property": "article:published_time"},
+        {"name": "article:published_time"},
+        {"itemprop": "datePublished"},
+    ):
+        tag = soup.find("meta", attrs=attrs)
+        content = tag.get("content") if tag else None
+        if content:
+            try:
+                parsed = datetime.fromisoformat(content.strip().replace("Z", "+00:00"))
+                return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+            except ValueError:
+                continue
+    return datetime.now(timezone.utc)
+
+
+def _extract_body_text(soup: BeautifulSoup) -> str:
+    for tag in soup(["script", "style", "nav", "header", "footer", "aside"]):
+        tag.decompose()
+    container = soup.find("article") or soup.body or soup
+    text = container.get_text(separator=" ", strip=True)
+    text = re.sub(r"\s+", " ", text)
+    return text[:MANUAL_BODY_MAX_CHARS]
+
+
+def fetch_article_by_url(url: str) -> Article | None:
+    """Fetch one arbitrary article page (not from NAVER API HUB) for the
+    "manually add a liked article" feature. Returns None on any fetch/parse
+    failure so the caller can surface a clean error instead of a half-built
+    Article."""
+    if not url.startswith(("http://", "https://")):
+        return None
+    try:
+        resp = requests.get(url, headers=MANUAL_FETCH_HEADERS, timeout=MANUAL_FETCH_TIMEOUT)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        logger.warning("manual fetch failed for %s: %s", url, exc)
+        return None
+
+    try:
+        soup = BeautifulSoup(resp.text, "html.parser")
+    except Exception as exc:  # malformed markup shouldn't crash the request
+        logger.warning("manual fetch parse failed for %s: %s", url, exc)
+        return None
+
+    return Article(
+        title=_extract_title(soup, url),
+        source=url,
+        url=url,
+        published_at=_extract_published_at(soup),
+        description=_extract_body_text(soup),
+    )

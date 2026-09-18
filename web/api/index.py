@@ -5,11 +5,14 @@ The always-on half of the system (Vercel). Endpoints:
                                      gated - the token pins one specific
                                      clipping run, not a calendar date)
   POST /api/feedback             -> record 도움됨/별로예요, update tag_weights
-  POST /api/kakao-send           -> send this batch's not-yet-sent, non-bad
-                                     articles as Kakao text message(s)
-  GET  /api/liked-full-text      -> this batch's non-bad (도움됨 + 미평가)
-                                     articles as one copy/paste-able text
-                                     block
+  POST /api/kakao-send           -> send this batch's not-yet-sent, liked
+                                     (도움됨) articles as Kakao text message(s)
+  GET  /api/liked-full-text      -> this batch's liked (도움됨) articles as
+                                     one copy/paste-able text block
+  POST /api/manual-article       -> fetch + evaluate one URL the user picked
+                                     by hand and add it to this batch as a
+                                     "selected" card, same shape as the other
+                                     30
 
 Every one of these is scoped to a single clipping run (batch): the token
 carries the batch's run_id, and every query below filters by that run_id
@@ -28,13 +31,13 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from pipeline import briefing
+from pipeline import briefing, collector, scorer
 from shared import db
 from shared.kakao_client import (
     KakaoAuthError, KakaoSendError, build_full_text, refresh_access_token, send_liked_articles,
 )
 from shared.magic_link import InvalidToken, verify_token
-from shared.models import Evaluation
+from shared.models import Evaluation, url_hash as compute_url_hash
 from pipeline import weights as weights_module
 
 app = FastAPI(title="Brand Strategy Briefing API")
@@ -120,7 +123,7 @@ def get_liked_full_text(token: str | None = None):
     batch_rows = db.get_batch_articles_for_kakao(payload["run_id"])
     if not batch_rows:
         return {"ok": True, "count": 0, "text": "",
-                "message": "이 회차에는 도움됨 또는 미평가 상태의 기사가 없습니다."}
+                "message": "이 회차에는 도움됨으로 표시된 기사가 없습니다."}
 
     payloads = _build_kakao_payloads(batch_rows)
     run_date = db.get_run_date(payload["run_id"]) or ""
@@ -160,3 +163,40 @@ def post_kakao_send(body: KakaoSendBody):
     except KakaoSendError as exc:
         db.record_kakao_send([r["id"] for r in liked_rows], "failed", str(exc))
         raise HTTPException(status_code=502, detail=f"카카오톡 발송 실패: {exc}") from exc
+
+
+class ManualArticleBody(BaseModel):
+    token: str
+    url: str
+
+
+@app.post("/api/manual-article")
+def post_manual_article(body: ManualArticleBody):
+    payload = _require_token(body.token)
+    run_id = payload["run_id"]
+
+    url = body.url.strip()
+    if not url.startswith(("http://", "https://")):
+        raise HTTPException(status_code=400, detail="올바른 URL이 아닙니다 (http/https로 시작해야 합니다).")
+
+    existing = db.find_batch_article_by_url_hash(run_id, compute_url_hash(url))
+    if existing is not None:
+        return {"ok": True, "duplicate": True, "article": existing}
+
+    article = collector.fetch_article_by_url(url)
+    if article is None:
+        raise HTTPException(status_code=502, detail="기사를 가져오지 못했습니다. URL을 확인하고 다시 시도해주세요.")
+
+    evaluations = scorer.evaluate([article])
+    if not evaluations:
+        raise HTTPException(status_code=502, detail="기사 요약에 실패했습니다. 잠시 후 다시 시도해주세요.")
+
+    tag_weights = db.get_all_tag_weights()
+    evaluations = weights_module.apply_weights(evaluations, tag_weights)
+
+    article.run_id = run_id
+    article.tier = "selected"
+    db.save_articles([article])
+    db.save_evaluations(evaluations)
+
+    return {"ok": True, "duplicate": False, "article": db.get_article_with_evaluation(article.id)}

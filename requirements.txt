@@ -1,5 +1,6 @@
 anthropic>=0.68
 requests>=2.32
+beautifulsoup4>=4.12
 supabase>=2.9
 cryptography>=43.0
 python-dotenv>=1.0

@@ -212,6 +212,25 @@ def _articles_with_evaluations(article_ids: list[str]) -> list[dict]:
     return res.data
 
 
+def get_article_with_evaluation(article_id: str) -> dict | None:
+    """One article (plus its evaluation, if any) in the same shape the
+    briefing page's cards already expect - used to hand a freshly
+    manually-added article straight back to the client without a full
+    get_briefing_for_run reload."""
+    rows = _articles_with_evaluations([article_id])
+    return rows[0] if rows else None
+
+
+def find_batch_article_by_url_hash(run_id: str, url_hash: str) -> dict | None:
+    """Does this batch already have an article at this URL? Used so adding
+    the same link twice (manual-add) reuses the existing card instead of
+    creating a duplicate."""
+    res = _run(get_client().table("articles")
+               .select("*, evaluations!article_id(*)")
+               .eq("run_id", run_id).eq("url_hash", url_hash).limit(1))
+    return res.data[0] if res.data else None
+
+
 def get_batch_article_ids(batch_id: str) -> list[str]:
     """The articles actually selected (emailed) in one specific clipping run
     - a batch's Kakao summary is scoped to exactly these, never anything from
@@ -238,18 +257,19 @@ def latest_rating_by_article(article_ids: list[str]) -> dict[str, str]:
     return latest
 
 
-def articles_excluding_bad_feedback(article_ids: list[str], latest_ratings: dict[str, str]) -> list[str]:
-    """Pure filter: keep every id whose latest rating isn't 'bad' - 'good'
-    and unrated (no entry in latest_ratings) both pass through untouched.
-    Split out from get_batch_articles_for_kakao so the batch-isolation rule
-    is unit-testable without a database."""
-    return [aid for aid in article_ids if latest_ratings.get(aid) != "bad"]
+def articles_with_good_feedback(article_ids: list[str], latest_ratings: dict[str, str]) -> list[str]:
+    """Pure filter: keep only ids whose latest rating is 'good' (도움됨).
+    Unrated ids and ids whose latest rating is 'bad' both drop out. Split
+    out from get_batch_articles_for_kakao so the batch-isolation rule is
+    unit-testable without a database."""
+    return [aid for aid in article_ids if latest_ratings.get(aid) == "good"]
 
 
 def get_batch_articles_for_kakao(batch_id: str) -> list[dict]:
     """Kakao summary target for exactly one clipping run: articles selected
-    in *this* batch whose latest feedback isn't '별로예요' (bad). '도움됨'
-    and unrated articles are both included.
+    in *this* batch whose latest feedback is '도움됨' (good). Unrated and
+    '별로예요' (bad) articles are both excluded - only explicitly liked
+    articles are ever summarized or sent.
 
     Deliberately does not consult kakao_sends / any "already generated,
     copied, or sent" history - regenerating this batch's summary any number
@@ -260,7 +280,7 @@ def get_batch_articles_for_kakao(batch_id: str) -> list[dict]:
     if not article_ids:
         return []
     latest = latest_rating_by_article(article_ids)
-    keep_ids = articles_excluding_bad_feedback(article_ids, latest)
+    keep_ids = articles_with_good_feedback(article_ids, latest)
     return _articles_with_evaluations(keep_ids)
 
 

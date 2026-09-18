@@ -57,6 +57,13 @@
   .full-text-pre{white-space:pre-wrap;word-break:break-word;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:12.5px;line-height:1.6;color:var(--ink);max-height:420px;overflow-y:auto;margin:0 0 10px;}
   .copy-btn{appearance:none;border:1px solid var(--line);cursor:pointer;font-family:inherit;background:var(--surface);color:var(--ink);font-size:13px;font-weight:600;padding:9px 16px;border-radius:980px;}
   .copy-btn:disabled{opacity:.45;cursor:not-allowed;}
+  .add-btn{appearance:none;border:none;cursor:pointer;font-family:inherit;background:var(--accent);color:#fff;font-size:14px;font-weight:700;padding:11px 20px;border-radius:980px;white-space:nowrap;}
+  .add-btn:disabled{opacity:.45;cursor:not-allowed;}
+  .add-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+  .add-input{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:13px;font-family:inherit;color:var(--ink);background:var(--surface);}
+  .add-input:disabled{opacity:.55;}
+  .add-row-status{font-size:11.5px;color:var(--ink-faint);white-space:nowrap;}
+  .add-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
   .state{text-align:center;padding:60px 20px;color:var(--ink-soft);font-size:14px;}
   .footnote{margin-top:8px;font-size:11.5px;color:var(--ink-faint);text-align:center;}
 </style>
@@ -170,6 +177,15 @@
         '<div class="msg-status" id="kakaoStatus"></div>' +
         '<div class="full-text-box" id="fullTextBox" hidden></div>' +
       '</div>' +
+      '<div class="panel">' +
+        '<h4 style="margin:0 0 4px;">기사 직접 추가하기</h4>' +
+        '<div class="sub" style="font-size:12.5px;margin-bottom:12px;">마음에 드는 기사 URL을 입력하면 다른 기사와 같은 형태로 요약해 추가합니다.</div>' +
+        '<div id="addRows"></div>' +
+        '<div class="add-actions">' +
+          '<button class="copy-btn" id="addRowBtn" type="button">+ 추가</button>' +
+          '<button class="add-btn" id="addSubmitBtn" type="button">기사 추가하기</button>' +
+        '</div>' +
+      '</div>' +
       '<div class="footnote">기사 원문 전문은 저장하지 않으며, 제목·요약·링크·메타데이터만 보관합니다.</div>';
 
     function renderCards() {
@@ -251,6 +267,51 @@
       }).finally(function () { btn.disabled = false; });
     };
 
+    function addUrlRow() {
+      const row = document.createElement('div');
+      row.className = 'add-row';
+      row.innerHTML =
+        '<input type="url" class="add-input" placeholder="https://...">' +
+        '<span class="add-row-status"></span>';
+      document.getElementById('addRows').appendChild(row);
+    }
+
+    document.getElementById('addRowBtn').onclick = function () { addUrlRow(); };
+
+    document.getElementById('addSubmitBtn').onclick = function () {
+      const submitBtn = document.getElementById('addSubmitBtn');
+      const rows = Array.prototype.slice.call(document.querySelectorAll('.add-row'));
+      const jobs = [];
+      rows.forEach(function (row) {
+        const input = row.querySelector('.add-input');
+        const status = row.querySelector('.add-row-status');
+        const url = input.value.trim();
+        if (!url) return;
+        input.disabled = true;
+        status.textContent = '추가하는 중…';
+        jobs.push(
+          post('/api/manual-article', { url: url }).then(function (res) {
+            if (res.article) {
+              data.selected.unshift(res.article);
+              renderCards();
+            }
+            status.textContent = res.duplicate ? '이미 추가된 기사입니다.' : '추가 완료';
+            row.remove();
+          }).catch(function (err) {
+            status.textContent = '실패: ' + err.message;
+            input.disabled = false;
+          })
+        );
+      });
+      if (!jobs.length) return;
+      submitBtn.disabled = true;
+      Promise.all(jobs).finally(function () {
+        submitBtn.disabled = false;
+        if (!document.querySelectorAll('.add-row').length) addUrlRow();
+      });
+    };
+
+    addUrlRow();
     renderCards();
   }
 })();
