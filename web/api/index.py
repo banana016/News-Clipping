@@ -13,6 +13,9 @@ The always-on half of the system (Vercel). Endpoints:
                                      by hand and add it to this batch as a
                                      "selected" card, same shape as the other
                                      30
+  POST /api/delete-article       -> hide one article from this batch (tier
+                                     -> "deleted") - never a hard delete, so
+                                     feedback/kakao_sends history stays intact
 
 Every one of these is scoped to a single clipping run (batch): the token
 carries the batch's run_id, and every query below filters by that run_id
@@ -25,10 +28,12 @@ Static page: web/public/index.html (adapted from the approved mockup) reads
 """
 from __future__ import annotations
 
+import logging
 import time
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from pipeline import briefing, collector, scorer
@@ -40,8 +45,20 @@ from shared.magic_link import InvalidToken, verify_token
 from shared.models import Evaluation, url_hash as compute_url_hash
 from pipeline import weights as weights_module
 
+logger = logging.getLogger(__name__)
+
 app = FastAPI(title="Brand Strategy Briefing API")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET", "POST"])
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    # Starlette's default for an uncaught exception is a plain-text 500 body,
+    # which breaks the frontend's response.json() parsing (it just throws
+    # "not valid JSON" with no useful detail). Every endpoint here always
+    # returns JSON instead, even when something we didn't anticipate blows up.
+    logger.exception("unhandled error on %s", request.url.path)
+    return JSONResponse(status_code=500, content={"detail": f"서버 오류가 발생했습니다: {exc}"})
 
 
 def _require_token(token: str | None) -> dict:
@@ -90,6 +107,21 @@ def post_feedback(body: FeedbackBody):
     for tag in tags:
         db.upsert_tag_weight(all_weights[tag])
 
+    return {"ok": True}
+
+
+class DeleteArticleBody(BaseModel):
+    token: str
+    article_id: str
+
+
+@app.post("/api/delete-article")
+def post_delete_article(body: DeleteArticleBody):
+    payload = _require_token(body.token)
+    if db.get_article_run_id(body.article_id) != payload["run_id"]:
+        raise HTTPException(status_code=404, detail="article does not belong to this batch")
+
+    db.update_article_tier(body.article_id, "deleted")
     return {"ok": True}
 
 

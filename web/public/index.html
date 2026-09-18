@@ -48,6 +48,8 @@
   .fb-btn{appearance:none;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:999px;border:none;background:var(--surface-2);color:var(--ink-soft);}
   .fb-btn[data-active="true"][data-value="good"]{background:var(--good-fill);color:var(--good-fill-ink);}
   .fb-btn[data-active="true"][data-value="bad"]{background:var(--bad-fill);color:var(--bad-fill-ink);}
+  .del-btn{color:var(--bad-fill);}
+  .del-btn:disabled{opacity:.45;cursor:not-allowed;}
   .kakao-panel,.panel{background:var(--surface-2);border-radius:18px;padding:20px 22px;margin-bottom:16px;}
   .kakao-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;}
   .kakao-btn{appearance:none;border:none;cursor:pointer;font-family:inherit;background:var(--kakao);color:var(--kakao-ink);font-size:14px;font-weight:700;padding:11px 20px;border-radius:980px;white-space:nowrap;}
@@ -152,6 +154,7 @@
       '<span class="msg-status">' + stateText + '</span>' +
       '<button class="fb-btn" data-article="' + articleId + '" data-value="good" data-active="' + goodActive + '">도움됨</button>' +
       '<button class="fb-btn" data-article="' + articleId + '" data-value="bad" data-active="' + badActive + '">별로예요</button>' +
+      '<button class="fb-btn del-btn" data-article="' + articleId + '">삭제하기</button>' +
       '</div>';
   }
 
@@ -219,7 +222,7 @@
     }
 
     function attachFeedback() {
-      document.querySelectorAll('.fb-btn').forEach(function (btn) {
+      document.querySelectorAll('.fb-btn[data-value]').forEach(function (btn) {
         btn.onclick = function () {
           const id = btn.getAttribute('data-article');
           const value = btn.getAttribute('data-value');
@@ -230,6 +233,21 @@
               .catch(function (err) { console.error(err); });
           }
           renderCards(); renderReview();
+        };
+      });
+      document.querySelectorAll('.del-btn').forEach(function (btn) {
+        btn.onclick = function () {
+          const id = btn.getAttribute('data-article');
+          if (!confirm('이 기사를 삭제할까요? 목록에서 사라집니다.')) return;
+          btn.disabled = true;
+          post('/api/delete-article', { article_id: id }).then(function () {
+            data.selected = data.selected.filter(function (row) { return row.id !== id; });
+            data.reviewed = data.reviewed.filter(function (row) { return row.id !== id; });
+            renderCards(); renderReview();
+          }).catch(function (err) {
+            btn.disabled = false;
+            alert('삭제 실패: ' + err.message);
+          });
         };
       });
     }

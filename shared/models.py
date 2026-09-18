@@ -15,7 +15,7 @@ from datetime import datetime
 from typing import Literal
 from urllib.parse import urlsplit, urlunsplit
 
-Tier = Literal["collected", "reviewed", "selected"]
+Tier = Literal["collected", "reviewed", "selected", "deleted"]
 Rating = Literal["good", "bad"]
 
 # Canonical tag vocabulary (spec section 11) — evaluations must only use these.

@@ -73,7 +73,10 @@ python -c "import secrets; print(secrets.token_hex(32))"
 2. Project Settings → Environment Variables에 아래를 등록:
    `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `MAGIC_LINK_SECRET`,
    `MAGIC_LINK_TTL_DAYS`, `KAKAO_REST_API_KEY`, `KAKAO_CLIENT_SECRET`,
-   `KAKAO_TOKEN_ENCRYPTION_KEY`, `WEB_BASE_URL`(배포된 주소 그대로)
+   `KAKAO_TOKEN_ENCRYPTION_KEY`, `WEB_BASE_URL`(배포된 주소 그대로),
+   `ANTHROPIC_API_KEY`(브리핑 페이지의 "기사 직접 추가하기" 기능이 요약할 때
+   사용 - 빠지면 수동 추가 시 500 에러가 납니다), `CLAUDE_MODEL`/`CLAUDE_EFFORT`
+   (선택, 없으면 기본값 사용)
 3. 배포 후 `.env`와 GitHub Actions Secrets의 `WEB_BASE_URL`도 이 주소로 맞추기
 4. ⚠️ **미검증 항목**: `vercel.json`은 `@vercel/python`이 FastAPI(ASGI) 앱을
    인식하는 표준 구성으로 작성했지만, `web/api/index.py`가 저장소 루트의

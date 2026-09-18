@@ -188,6 +188,13 @@ def _evaluate_batch(client: anthropic.Anthropic, by_id: dict[str, Article],
     except (json.JSONDecodeError, KeyError, StopIteration) as exc:
         logger.error("Malformed Claude response on batch starting %d: %s", start, exc)
         return []
+    except Exception as exc:
+        # Catch-all so the "never raises" contract above actually holds - e.g.
+        # a missing/invalid API key raises a plain TypeError from the SDK
+        # before any HTTP request is even made, which none of the specific
+        # anthropic.* exceptions above would catch.
+        logger.error("Unexpected error on batch starting %d: %s", start, exc)
+        return []
 
     results = []
     for item in raw_results:
