@@ -169,33 +169,7 @@ def _call_claude(client: anthropic.Anthropic, batch: list[Article]) -> list[dict
     return json.loads(text)["evaluations"]
 
 
-def _evaluate_batch(client: anthropic.Anthropic, by_id: dict[str, Article],
-                     start: int, batch: list[Article]) -> list[Evaluation]:
-    """Call Claude for one batch and convert the response to Evaluations.
-    Never raises — a failed batch just yields no evaluations for its
-    articles, and the run continues (see run_pipeline.py error policy)."""
-    try:
-        raw_results = _call_claude(client, batch)
-    except anthropic.RateLimitError as exc:
-        logger.error("Claude rate limited on batch starting %d: %s", start, exc)
-        return []
-    except anthropic.APIStatusError as exc:
-        logger.error("Claude API error on batch starting %d: %s", start, exc)
-        return []
-    except anthropic.APIConnectionError as exc:
-        logger.error("Claude connection error on batch starting %d: %s", start, exc)
-        return []
-    except (json.JSONDecodeError, KeyError, StopIteration) as exc:
-        logger.error("Malformed Claude response on batch starting %d: %s", start, exc)
-        return []
-    except Exception as exc:
-        # Catch-all so the "never raises" contract above actually holds - e.g.
-        # a missing/invalid API key raises a plain TypeError from the SDK
-        # before any HTTP request is even made, which none of the specific
-        # anthropic.* exceptions above would catch.
-        logger.error("Unexpected error on batch starting %d: %s", start, exc)
-        return []
-
+def _to_evaluations(by_id: dict[str, Article], raw_results: list[dict]) -> list[Evaluation]:
     results = []
     for item in raw_results:
         article = by_id.get(item["id"])
@@ -226,6 +200,50 @@ def _evaluate_batch(client: anthropic.Anthropic, by_id: dict[str, Article],
             promotion_specific=item["promotion_specific"],
         ))
     return results
+
+
+def _evaluate_batch(client: anthropic.Anthropic, by_id: dict[str, Article],
+                     start: int, batch: list[Article]) -> list[Evaluation]:
+    """Call Claude for one batch and convert the response to Evaluations.
+    Never raises — a failed batch just yields no evaluations for its
+    articles, and the run continues (see run_pipeline.py error policy)."""
+    try:
+        raw_results = _call_claude(client, batch)
+    except anthropic.RateLimitError as exc:
+        logger.error("Claude rate limited on batch starting %d: %s", start, exc)
+        return []
+    except anthropic.APIStatusError as exc:
+        logger.error("Claude API error on batch starting %d: %s", start, exc)
+        return []
+    except anthropic.APIConnectionError as exc:
+        logger.error("Claude connection error on batch starting %d: %s", start, exc)
+        return []
+    except (json.JSONDecodeError, KeyError, StopIteration) as exc:
+        logger.error("Malformed Claude response on batch starting %d: %s", start, exc)
+        return []
+    except Exception as exc:
+        # Catch-all so the "never raises" contract above actually holds - e.g.
+        # a missing/invalid API key raises a plain TypeError from the SDK
+        # before any HTTP request is even made, which none of the specific
+        # anthropic.* exceptions above would catch.
+        logger.error("Unexpected error on batch starting %d: %s", start, exc)
+        return []
+
+    return _to_evaluations(by_id, raw_results)
+
+
+def evaluate_single(article: Article) -> Evaluation:
+    """Like evaluate(), but for exactly one caller-picked article (the
+    "manually add a liked article" web feature) where swallowing the error
+    into an empty list would just leave the caller guessing why nothing came
+    back. Raises whatever the underlying Claude call raised - the caller is
+    expected to turn that into a user-facing message."""
+    client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    raw_results = _call_claude(client, [article])
+    evaluations = _to_evaluations({article.id: article}, raw_results)
+    if not evaluations:
+        raise ValueError("Claude returned no evaluation for this article")
+    return evaluations[0]
 
 
 def evaluate(candidates: list[Article]) -> list[Evaluation]:

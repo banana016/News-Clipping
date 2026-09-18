@@ -166,7 +166,12 @@ def fetch_article_by_url(url: str) -> Article | None:
         return None
 
     try:
-        soup = BeautifulSoup(resp.text, "html.parser")
+        # Parse raw bytes, not resp.text: when a site's Content-Type header
+        # omits a charset (common on Korean news sites), requests falls back
+        # to decoding as ISO-8859-1 and resp.text is already mojibake by the
+        # time we'd see it. Handing BeautifulSoup the bytes lets it sniff the
+        # real encoding (meta charset tag, BOM, etc.) instead.
+        soup = BeautifulSoup(resp.content, "html.parser")
     except Exception as exc:  # malformed markup shouldn't crash the request
         logger.warning("manual fetch parse failed for %s: %s", url, exc)
         return None

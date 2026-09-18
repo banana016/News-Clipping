@@ -15,6 +15,7 @@ from pipeline import collector
 class _FakeResponse:
     def __init__(self, text: str, status_code: int = 200):
         self.text = text
+        self.content = text.encode("utf-8")
         self.status_code = status_code
 
     def raise_for_status(self) -> None:

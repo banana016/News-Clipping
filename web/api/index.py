@@ -31,6 +31,7 @@ from __future__ import annotations
 import logging
 import time
 
+import anthropic
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -38,6 +39,7 @@ from pydantic import BaseModel
 
 from pipeline import briefing, collector, scorer
 from shared import db
+from shared.config import settings
 from shared.kakao_client import (
     KakaoAuthError, KakaoSendError, build_full_text, refresh_access_token, send_liked_articles,
 )
@@ -219,16 +221,30 @@ def post_manual_article(body: ManualArticleBody):
     if article is None:
         raise HTTPException(status_code=502, detail="기사를 가져오지 못했습니다. URL을 확인하고 다시 시도해주세요.")
 
-    evaluations = scorer.evaluate([article])
-    if not evaluations:
-        raise HTTPException(status_code=502, detail="기사 요약에 실패했습니다. 잠시 후 다시 시도해주세요.")
+    if not settings.anthropic_api_key:
+        raise HTTPException(status_code=500, detail="서버에 ANTHROPIC_API_KEY가 설정되어 있지 않습니다.")
+
+    try:
+        evaluation = scorer.evaluate_single(article)
+    except anthropic.AuthenticationError as exc:
+        logger.error("manual-article auth error: %s", exc)
+        raise HTTPException(status_code=500, detail="Claude API 인증에 실패했습니다. ANTHROPIC_API_KEY를 확인해주세요.") from exc
+    except anthropic.RateLimitError as exc:
+        logger.error("manual-article rate limited: %s", exc)
+        raise HTTPException(status_code=502, detail="Claude API 사용량 한도에 걸렸습니다. 잠시 후 다시 시도해주세요.") from exc
+    except (anthropic.APIStatusError, anthropic.APIConnectionError) as exc:
+        logger.error("manual-article Claude API error: %s", exc)
+        raise HTTPException(status_code=502, detail=f"Claude API 오류: {exc}") from exc
+    except Exception as exc:
+        logger.error("manual-article evaluation failed: %s", exc)
+        raise HTTPException(status_code=502, detail=f"기사 요약에 실패했습니다: {exc}") from exc
 
     tag_weights = db.get_all_tag_weights()
-    evaluations = weights_module.apply_weights(evaluations, tag_weights)
+    [evaluation] = weights_module.apply_weights([evaluation], tag_weights)
 
     article.run_id = run_id
     article.tier = "selected"
     db.save_articles([article])
-    db.save_evaluations(evaluations)
+    db.save_evaluations([evaluation])
 
     return {"ok": True, "duplicate": False, "article": db.get_article_with_evaluation(article.id)}
