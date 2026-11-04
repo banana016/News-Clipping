@@ -129,12 +129,20 @@ def get_briefing_for_run(run_id: str) -> dict:
     run_row = run.data[0]
 
     articles = _run(get_client().table("articles")
-                    .select("*, evaluations!article_id(*)")
+                    .select("*, evaluations!article_id(*), feedback(rating, rated_at)")
                     .eq("run_id", run_id))
 
-    selected = [a for a in articles.data if a.get("tier") == "selected"]
-    reviewed = [a for a in articles.data if a.get("tier") == "reviewed"]
+    selected = [with_latest_rating(a) for a in articles.data if a.get("tier") == "selected"]
+    reviewed = [with_latest_rating(a) for a in articles.data if a.get("tier") == "reviewed"]
     return {"run": run_row, "selected": selected, "reviewed": reviewed}
+
+
+def with_latest_rating(row: dict) -> dict:
+    """Swap an article row's embedded feedback rows for a single `rating`
+    ('good' / 'bad' / None), so the page can show what's already been rated."""
+    latest = max(row.get("feedback") or [], key=lambda f: f["rated_at"], default=None)
+    rest = {k: v for k, v in row.items() if k != "feedback"}
+    return {**rest, "rating": latest["rating"] if latest else None}
 
 
 # --- feedback ---------------------------------------------------------------
@@ -157,6 +165,12 @@ def record_feedback(article_id: str, rating: str) -> None:
         "article_id": article_id, "rating": rating,
         "rated_at": datetime.now(timezone.utc).isoformat(),
     }))
+
+
+def clear_feedback(article_id: str) -> None:
+    """Cancelling a rating returns the article to unrated, which is what
+    having no feedback rows means."""
+    _run(get_client().table("feedback").delete().eq("article_id", article_id))
 
 
 # --- tag weights (the learning loop) -----------------------------------
@@ -242,7 +256,7 @@ def get_batch_article_ids(batch_id: str) -> list[str]:
 
 def latest_rating_by_article(article_ids: list[str]) -> dict[str, str]:
     """Most recent feedback rating ('good'/'bad') per article id, restricted
-    to the given ids. feedback is an append-only log (record_feedback always
+    to the given ids. Changing a rating adds a row (record_feedback always
     inserts), so a later 'bad' must override an earlier 'good' - checking
     for "any 'good' row ever" would treat an article as liked forever, even
     after the user changed their mind. An id with no feedback row at all is

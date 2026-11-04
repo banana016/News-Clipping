@@ -90,22 +90,30 @@ def get_briefing(token: str | None = None):
 class FeedbackBody(BaseModel):
     token: str
     article_id: str
-    rating: str  # "good" | "bad"
+    rating: str  # "good" | "bad" | "none" (cancel an earlier rating)
 
 
 @app.post("/api/feedback")
 def post_feedback(body: FeedbackBody):
     payload = _require_token(body.token)
-    if body.rating not in ("good", "bad"):
-        raise HTTPException(status_code=400, detail="rating must be 'good' or 'bad'")
+    if body.rating not in ("good", "bad", "none"):
+        raise HTTPException(status_code=400, detail="rating must be 'good', 'bad' or 'none'")
     if db.get_article_run_id(body.article_id) != payload["run_id"]:
         raise HTTPException(status_code=404, detail="article does not belong to this batch")
 
-    db.record_feedback(body.article_id, body.rating)
+    previous = db.latest_rating_by_article([body.article_id]).get(body.article_id)
+    new = None if body.rating == "none" else body.rating
+    if new == previous:
+        return {"ok": True}
+
+    if new is None:
+        db.clear_feedback(body.article_id)
+    else:
+        db.record_feedback(body.article_id, new)
 
     tags = db.get_article_tags(body.article_id)
     all_weights = db.get_all_tag_weights()
-    weights_module.update_weights_with_feedback(all_weights, tags, body.rating)
+    weights_module.apply_rating_change(all_weights, tags, previous, new)
     for tag in tags:
         db.upsert_tag_weight(all_weights[tag])
 

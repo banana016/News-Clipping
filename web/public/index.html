@@ -160,7 +160,10 @@
 
   function render(data) {
     const run = data.run;
-    const ratings = {}; // client-local optimistic state, article_id -> 'good'|'bad'
+    const ratings = {}; // article_id -> 'good'|'bad', seeded from the server, then updated optimistically
+    data.selected.concat(data.reviewed).forEach(function (row) {
+      if (row.rating) ratings[row.id] = row.rating;
+    });
 
     app.innerHTML =
       '<div class="date-line">' + run.run_date + '</div>' +
@@ -226,12 +229,14 @@
         btn.onclick = function () {
           const id = btn.getAttribute('data-article');
           const value = btn.getAttribute('data-value');
-          const next = ratings[id] === value ? undefined : value;
+          const previous = ratings[id];
+          const next = previous === value ? undefined : value;
           ratings[id] = next;
-          if (next) {
-            post('/api/feedback', { article_id: id, rating: next })
-              .catch(function (err) { console.error(err); });
-          }
+          post('/api/feedback', { article_id: id, rating: next || 'none' }).catch(function (err) {
+            ratings[id] = previous;
+            renderCards(); renderReview();
+            alert('평가 저장 실패: ' + err.message);
+          });
           renderCards(); renderReview();
         };
       });

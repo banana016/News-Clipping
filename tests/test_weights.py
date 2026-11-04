@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pipeline.weights import apply_weights, compute_adjustment, update_weights_with_feedback
+from pipeline.weights import apply_rating_change, apply_weights, compute_adjustment
 from shared.models import Evaluation, TagWeight
 
 
@@ -39,10 +39,43 @@ def test_apply_weights_averages_across_tags():
     assert ev.weight_adjustment == 0.0  # (+5 + -5) / 2
 
 
-def test_update_weights_with_feedback_increments_counts():
+def _after_changes(*changes: tuple[str | None, str | None]) -> TagWeight:
     weights_by_tag: dict[str, TagWeight] = {}
-    update_weights_with_feedback(weights_by_tag, ["뷰티"], "good")
-    update_weights_with_feedback(weights_by_tag, ["뷰티"], "bad")
-    w = weights_by_tag["뷰티"]
-    assert w.total_count == 2
-    assert w.good_count == 1
+    for previous, new in changes:
+        apply_rating_change(weights_by_tag, ["뷰티"], previous, new)
+    return weights_by_tag["뷰티"]
+
+
+def test_new_ratings_increment_counts():
+    w = _after_changes((None, "good"), (None, "bad"))
+    assert (w.good_count, w.total_count) == (1, 2)
+
+
+def test_changing_a_rating_does_not_count_the_article_twice():
+    w = _after_changes((None, "good"), ("good", "bad"))
+    assert (w.good_count, w.total_count) == (0, 1)
+    w = _after_changes((None, "bad"), ("bad", "good"))
+    assert (w.good_count, w.total_count) == (1, 1)
+
+
+def test_repeating_a_rating_changes_nothing():
+    w = _after_changes((None, "good"), ("good", "good"))
+    assert (w.good_count, w.total_count) == (1, 1)
+
+
+def test_cancelling_a_rating_removes_it_from_the_counts():
+    w = _after_changes((None, "good"), ("good", None))
+    assert (w.good_count, w.total_count) == (0, 0)
+    w = _after_changes((None, "bad"), ("bad", None))
+    assert (w.good_count, w.total_count) == (0, 0)
+
+
+def test_adjustment_follows_the_corrected_counts():
+    weights_by_tag = {"뷰티": TagWeight(tag="뷰티", good_count=5, total_count=5, weight_adjustment=5.0)}
+    apply_rating_change(weights_by_tag, ["뷰티"], "good", "bad")
+    assert weights_by_tag["뷰티"].weight_adjustment == 3.0  # 4 of 5 good
+
+
+def test_counts_never_go_negative():
+    w = _after_changes(("good", None))
+    assert (w.good_count, w.total_count) == (0, 0)

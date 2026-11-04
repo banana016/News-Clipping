@@ -41,11 +41,14 @@ def apply_weights(evaluations: list[Evaluation], weights_by_tag: dict[str, TagWe
     return evaluations
 
 
-def update_weights_with_feedback(weights_by_tag: dict[str, TagWeight], tags: list[str], rating: str) -> None:
-    """Called once per feedback event (web app POST /api/feedback)."""
+def apply_rating_change(weights_by_tag: dict[str, TagWeight], tags: list[str],
+                         previous: str | None, new: str | None) -> None:
+    """Called once per feedback event (web app POST /api/feedback). previous
+    and new are 'good', 'bad', or None (unrated). Counts the change rather
+    than the click, so each article counts once toward its tags however many
+    times it's re-rated or cancelled."""
     for tag in tags:
         w = weights_by_tag.setdefault(tag, TagWeight(tag=tag))
-        w.total_count += 1
-        if rating == "good":
-            w.good_count += 1
+        w.total_count = max(0, w.total_count + (new is not None) - (previous is not None))
+        w.good_count = max(0, w.good_count + (new == "good") - (previous == "good"))
         w.weight_adjustment = compute_adjustment(w)
