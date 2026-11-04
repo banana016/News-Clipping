@@ -21,6 +21,13 @@ UTC 기준)에 자동 실행됩니다. Actions 탭에서 수동 실행(`workflow
   ```
 - **수집/평가 단계 실패**: `runs.status = 'failed'`. NAVER/Claude API 키 만료나
   요청 한도 초과가 가장 흔한 원인입니다. 콘솔에서 키 상태를 먼저 확인하세요.
+- **평가 전체 실패 후 복구**: 크레딧 부족 등으로 평가가 전부 실패한 회차는
+  저장된 기사로 다시 평가할 수 있습니다. 기본은 대상만 보여주고, `--apply`를
+  붙여야 Claude를 호출하고 저장합니다. 메일은 다시 보내지 않으며 기존 링크가
+  그대로 복구된 내용을 보여줍니다. 회차가 여러 개면 오래된 순서로 넣으세요:
+  ```bash
+  python -m scripts.rescore_run <runs.id> [<runs.id> ...] --apply
+  ```
 - **카카오 발송 실패**: 웹앱에서 "전송 실패: ..." 메시지로 바로 표시됩니다.
   Refresh Token 자체가 만료된 경우(장기간 미사용 시 발생 가능) `scripts/kakao_auth_setup.py`를
   다시 실행해 재인증하세요.
@@ -42,6 +49,7 @@ UTC 기준)에 자동 실행됩니다. Actions 탭에서 수동 실행(`workflow
 | `MAX_SELECT` | 10 | 최대 선정 건수 |
 | `MIN_SCORE_THRESHOLD` | 60 | 이 점수 미만은 선정하지 않음 |
 | `RESEND_GUARD_DAYS` | 7 | 이 기간 내 이미 선정된 기사는 재선정하지 않음 |
+| `COLLECT_MAX_HOURS` | 96 | 직전 성공 실행 이후를 수집하되, 최대 이 시간까지만 거슬러 올라감 |
 
 ## 재발급이 필요한 시크릿
 

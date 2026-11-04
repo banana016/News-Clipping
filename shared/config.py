@@ -76,6 +76,9 @@ class Settings:
     max_select: int = field(default_factory=lambda: _get_int("MAX_SELECT", 10))
     min_score_threshold: int = field(default_factory=lambda: _get_int("MIN_SCORE_THRESHOLD", 60))
 
+    # --- Collection window (see collector.collection_window_hours) --------
+    collect_max_hours: int = field(default_factory=lambda: _get_int("COLLECT_MAX_HOURS", 96))
+
     # --- Weight-adjustment safety rails ---------------------------------
     weight_min_samples: int = field(default_factory=lambda: _get_int("WEIGHT_MIN_SAMPLES", 5))
     weight_max_adjustment: int = field(default_factory=lambda: _get_int("WEIGHT_MAX_ADJUSTMENT", 5))

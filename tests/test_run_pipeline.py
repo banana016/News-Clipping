@@ -36,7 +36,8 @@ def pipeline_env(monkeypatch):
     `emails` collects sent subjects, `articles` is what collection returns."""
     env = type("Env", (), {"finished": [], "emails": [], "articles": [_article(1), _article(2)]})()
 
-    monkeypatch.setattr(collector, "collect", lambda run_id: list(env.articles))
+    monkeypatch.setattr(collector, "collect", lambda run_id, hours: list(env.articles))
+    monkeypatch.setattr(db, "last_good_run_started_at", lambda: None)
     monkeypatch.setattr(db, "create_run", lambda *a: None)
     monkeypatch.setattr(db, "finish_run", lambda run_id, **kw: env.finished.append(kw))
     monkeypatch.setattr(db, "save_articles", lambda articles: None)

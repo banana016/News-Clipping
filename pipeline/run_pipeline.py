@@ -34,7 +34,8 @@ def main() -> int:
 
     # 2-3. collect + normalize
     try:
-        collected = collector.collect(run_id)
+        hours = collector.collection_window_hours(db.last_good_run_started_at())
+        collected = collector.collect(run_id, hours)
     except Exception:
         logger.exception("collection failed")
         db.finish_run(run_id, status="failed", collected_n=0, reviewed_n=0, selected_n=0,

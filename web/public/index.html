@@ -102,9 +102,12 @@
     });
   }
   function escapeHtml(s) {
-    return s.replace(/[&<>"']/g, function (c) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
+  }
+  function safeUrl(url) {
+    return /^https?:\/\//i.test(url || '') ? escapeHtml(url) : '#';
   }
   function copyText(text) {
     const status = document.getElementById('copyStatus');
@@ -136,7 +139,7 @@
   }
 
   api('/api/briefing').then(render).catch(function (err) {
-    app.innerHTML = '<div class="state">불러오지 못했습니다: ' + err.message + '<br>링크가 만료되었을 수 있습니다. 최신 메일의 링크로 다시 시도해 주세요.</div>';
+    app.innerHTML = '<div class="state">불러오지 못했습니다: ' + escapeHtml(err.message) + '<br>링크가 만료되었을 수 있습니다. 최신 메일의 링크로 다시 시도해 주세요.</div>';
   });
 
   function evalOf(row) {
@@ -144,7 +147,11 @@
   }
 
   function tagsHtml(tags) {
-    return (tags || []).map(function (t) { return '<span class="tag">' + t + '</span>'; }).join('');
+    return (tags || []).map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
+  }
+
+  function hasScore(e) {
+    return e.final_score !== undefined && e.final_score !== null;
   }
 
   function fbGroup(articleId, rating) {
@@ -199,10 +206,11 @@
         const e = evalOf(row);
         return '<article class="card" data-id="' + row.id + '">' +
           '<div class="tags">' + tagsHtml(e.tags) + '</div>' +
-          '<h3>' + row.title + '</h3>' +
-          '<p class="body-text">' + (e.summary || '') + ' ' + (e.interpretation || '') + '</p>' +
-          '<div class="meta">' + row.source + ' · ' + new Date(row.published_at).toLocaleString('ko-KR') + ' · ' + e.final_score + '점</div>' +
-          '<div class="card-foot"><a class="link" href="' + row.url + '" target="_blank" rel="noopener">원문보기 ↗</a>' +
+          '<h3>' + escapeHtml(row.title) + '</h3>' +
+          '<p class="body-text">' + escapeHtml(e.summary) + ' ' + escapeHtml(e.interpretation) + '</p>' +
+          '<div class="meta">' + escapeHtml(row.source) + ' · ' + new Date(row.published_at).toLocaleString('ko-KR') +
+          (hasScore(e) ? ' · ' + e.final_score + '점' : '') + '</div>' +
+          '<div class="card-foot"><a class="link" href="' + safeUrl(row.url) + '" target="_blank" rel="noopener">원문보기 ↗</a>' +
           fbGroup(row.id, ratings[row.id]) + '</div></article>';
       }).join('');
       attachFeedback();
@@ -213,12 +221,12 @@
         const e = evalOf(row);
         return '<div class="review-card" data-id="' + row.id + '">' +
           '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">' +
-          '<span class="reason-badge">' + (e.reject_reason || '탈락') + '</span>' +
-          '<span class="score-text">점수 ' + e.final_score + '/100</span></div>' +
+          '<span class="reason-badge">' + (hasScore(e) ? escapeHtml(e.reject_reason || '탈락') : '평가 없음') + '</span>' +
+          (hasScore(e) ? '<span class="score-text">점수 ' + e.final_score + '/100</span>' : '') + '</div>' +
           '<div class="tags">' + tagsHtml(e.tags) + '</div>' +
-          '<h4>' + row.title + '</h4>' +
-          '<div class="meta">' + row.source + '</div>' +
-          '<div class="card-foot"><a class="link" href="' + row.url + '" target="_blank" rel="noopener">원문보기 ↗</a>' +
+          '<h4>' + escapeHtml(row.title) + '</h4>' +
+          '<div class="meta">' + escapeHtml(row.source) + '</div>' +
+          '<div class="card-foot"><a class="link" href="' + safeUrl(row.url) + '" target="_blank" rel="noopener">원문보기 ↗</a>' +
           fbGroup(row.id, ratings[row.id]) + '</div></div>';
       }).join('');
       attachFeedback();

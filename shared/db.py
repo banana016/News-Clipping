@@ -66,6 +66,22 @@ def finish_run(run_id: str, *, status: str, collected_n: int, reviewed_n: int,
     }).eq("id", run_id))
 
 
+def last_good_run_started_at() -> datetime | None:
+    """When the most recent run that actually selected articles started. A
+    run that selected nothing doesn't count, so its window gets collected again."""
+    res = _run(get_client().table("runs").select("started_at")
+               .in_("status", ["done", "done_email_failed"]).gt("selected_n", 0)
+               .order("started_at", desc=True).limit(1))
+    return datetime.fromisoformat(res.data[0]["started_at"]) if res.data else None
+
+
+def mark_run_recovered(run_id: str, selected_n: int) -> None:
+    """After scripts/rescore_run.py re-evaluated a run whose scoring failed."""
+    _run(get_client().table("runs").update({
+        "status": "done", "selected_n": selected_n, "error_message": None,
+    }).eq("id", run_id))
+
+
 # --- resend guard (spec: 최근 7일 이내 동일 기사 재발송 방지) -------------
 
 def was_recently_sent(url_hash: str) -> bool:
@@ -92,6 +108,19 @@ def save_articles(articles: list[Article]) -> None:
     _run(get_client().table("articles").insert(rows))
 
 
+def get_articles_for_rescore(run_id: str) -> list[dict]:
+    """A run's reviewed articles - the ones that were due for evaluation."""
+    res = _run(get_client().table("articles").select("*")
+               .eq("run_id", run_id).eq("tier", "reviewed"))
+    return res.data
+
+
+def selected_url_hashes_since(iso_timestamp: str) -> set[str]:
+    res = _run(get_client().table("articles").select("url_hash")
+               .eq("tier", "selected").gte("created_at", iso_timestamp))
+    return {row["url_hash"] for row in res.data}
+
+
 def update_article_tier(article_id: str, tier: str) -> None:
     _run(get_client().table("articles").update({"tier": tier}).eq("id", article_id))
 
@@ -107,6 +136,20 @@ def save_evaluations(evaluations: list[Evaluation]) -> None:
         "insight_quote": e.insight_quote, "reject_reason": e.reject_reason,
     } for e in evaluations]
     _run(get_client().table("evaluations").insert(rows))
+
+
+def get_run(run_id: str) -> dict | None:
+    res = _run(get_client().table("runs").select("*").eq("id", run_id).limit(1))
+    return res.data[0] if res.data else None
+
+
+def count_evaluations(article_ids: list[str]) -> int:
+    count = 0
+    for start in range(0, len(article_ids), 100):
+        res = _run(get_client().table("evaluations").select("article_id")
+                   .in_("article_id", article_ids[start:start + 100]))
+        count += len(res.data)
+    return count
 
 
 def get_run_date(run_id: str) -> str | None:

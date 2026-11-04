@@ -9,6 +9,7 @@ Docs (Phase 1 spec section 4):
 """
 from __future__ import annotations
 
+import html
 import logging
 import re
 import time
@@ -27,6 +28,8 @@ NAVER_ENDPOINT = "https://naverapihub.apigw.ntruss.com/search/v1/news"
 DISPLAY_PER_QUERY = 30
 MAX_RETRIES = 3
 
+MIN_COLLECT_HOURS = 24
+
 MANUAL_FETCH_TIMEOUT = 10
 MANUAL_FETCH_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -38,7 +41,7 @@ _TAG_RE = re.compile(r"<[^>]+>")
 
 
 def _strip_html(text: str) -> str:
-    return _TAG_RE.sub("", text).replace("&quot;", '"').replace("&amp;", "&")
+    return html.unescape(_TAG_RE.sub("", text))
 
 
 def _parse_pubdate(pubdate: str) -> datetime:
@@ -99,7 +102,20 @@ def search_one(query: str, run_id: str, since: datetime) -> list[Article]:
     return articles
 
 
-def collect(run_id: str, hours: int = 24) -> list[Article]:
+def collection_window_hours(last_good_run_start: datetime | None, now: datetime | None = None) -> float:
+    """How far back this run should collect: everything since the last run
+    that actually selected articles, so nothing published between the
+    Mon/Wed/Fri runs is skipped and a failed run's gap is picked up by the next
+    one. Never under MIN_COLLECT_HOURS (a same-day manual re-run still sees a
+    normal pool), and capped by COLLECT_MAX_HOURS to bound the Claude cost."""
+    if last_good_run_start is None:
+        return MIN_COLLECT_HOURS
+    now = now or datetime.now(timezone.utc)
+    elapsed = (now - last_good_run_start).total_seconds() / 3600
+    return min(max(elapsed, MIN_COLLECT_HOURS), settings.collect_max_hours)
+
+
+def collect(run_id: str, hours: float = MIN_COLLECT_HOURS) -> list[Article]:
     """Run every configured keyword query and merge + dedupe by URL hash."""
     since = datetime.now(timezone.utc) - timedelta(hours=hours)
     seen_hashes: set[str] = set()
@@ -112,7 +128,8 @@ def collect(run_id: str, hours: int = 24) -> list[Article]:
             seen_hashes.add(article.url_hash)  # type: ignore[attr-defined]
             merged.append(article)
 
-    logger.info("collected %d unique articles across %d queries", len(merged), len(SEARCH_QUERIES))
+    logger.info("collected %d unique articles across %d queries (last %.1f hours)",
+                len(merged), len(SEARCH_QUERIES), hours)
     return merged
 
 

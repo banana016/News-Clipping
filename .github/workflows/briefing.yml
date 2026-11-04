@@ -46,4 +46,5 @@ jobs:
           WEIGHT_MIN_SAMPLES: ${{ vars.WEIGHT_MIN_SAMPLES || '5' }}
           WEIGHT_MAX_ADJUSTMENT: ${{ vars.WEIGHT_MAX_ADJUSTMENT || '5' }}
           RESEND_GUARD_DAYS: ${{ vars.RESEND_GUARD_DAYS || '7' }}
+          COLLECT_MAX_HOURS: ${{ vars.COLLECT_MAX_HOURS || '96' }}
         run: python -m pipeline.run_pipeline
