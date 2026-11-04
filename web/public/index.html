@@ -184,7 +184,7 @@
       '<div class="kakao-panel">' +
         '<div class="kakao-head">' +
           '<div><h4 style="margin:0 0 4px;">선택한 기사 전문보기</h4>' +
-          '<div class="sub" style="font-size:12.5px;">도움됨 표시한 기사 전문을 모아 보여드립니다. 복사해서 카카오톡에 직접 붙여넣어 주세요.</div></div>' +
+          '<div class="sub" style="font-size:12.5px;">도움됨 표시한 기사와 아직 평가하지 않은 기사의 전문을 모아 보여드립니다. 별로예요 표시한 기사는 빠집니다. 복사해서 카카오톡에 직접 붙여넣어 주세요.</div></div>' +
           '<button class="kakao-btn" id="kakaoBtn">전문보기</button>' +
         '</div>' +
         '<div class="msg-status" id="kakaoStatus"></div>' +
@@ -281,7 +281,7 @@
       status.textContent = '불러오는 중…';
       api('/api/liked-full-text').then(function (res) {
         if (!res.count) {
-          status.textContent = res.message || '도움됨으로 표시된 기사가 없습니다.';
+          status.textContent = res.message || '전문으로 볼 기사가 없습니다.';
           box.hidden = true;
           box.innerHTML = '';
           return;

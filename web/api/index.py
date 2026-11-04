@@ -7,8 +7,8 @@ The always-on half of the system (Vercel). Endpoints:
   POST /api/feedback             -> record 도움됨/별로예요, update tag_weights
   POST /api/kakao-send           -> send this batch's not-yet-sent, liked
                                      (도움됨) articles as Kakao text message(s)
-  GET  /api/liked-full-text      -> this batch's liked (도움됨) articles as
-                                     one copy/paste-able text block
+  GET  /api/liked-full-text      -> this batch's 도움됨 and unrated selected
+                                     articles as one copy/paste-able text block
   POST /api/manual-article       -> fetch + evaluate one URL the user picked
                                      by hand and add it to this batch as a
                                      "selected" card, same shape as the other
@@ -159,13 +159,13 @@ def _build_kakao_payloads(liked_rows: list[dict]) -> list[dict]:
 def get_liked_full_text(token: str | None = None):
     payload = _require_token(token)
 
-    # Scoped to this one batch only - see get_batch_articles_for_kakao.
+    # Scoped to this one batch only - see get_batch_articles_for_full_text.
     # Always regenerable: never filtered by whether it (or any other batch)
     # was already viewed, copied, or sent.
-    batch_rows = db.get_batch_articles_for_kakao(payload["run_id"])
+    batch_rows = db.get_batch_articles_for_full_text(payload["run_id"])
     if not batch_rows:
         return {"ok": True, "count": 0, "text": "",
-                "message": "이 회차에는 도움됨으로 표시된 기사가 없습니다."}
+                "message": "이 회차에는 전문으로 볼 기사가 없습니다."}
 
     payloads = _build_kakao_payloads(batch_rows)
     run_date = db.get_run_date(payload["run_id"]) or ""

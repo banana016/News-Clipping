@@ -341,6 +341,22 @@ def get_batch_articles_for_kakao(batch_id: str) -> list[dict]:
     return _articles_with_evaluations(keep_ids)
 
 
+def full_text_rows(selected: list[dict], reviewed: list[dict]) -> list[dict]:
+    """Pure filter for the "전문보기" block, over get_briefing_for_run's rows:
+    selected articles unless rated '별로예요' (unrated ones stay in), plus
+    reviewed articles only if explicitly rated '도움됨' - the rest of the
+    reviewed tier was rejected and left unrated, so it must not flood in."""
+    return ([row for row in selected if row["rating"] != "bad"]
+            + [row for row in reviewed if row["rating"] == "good"])
+
+
+def get_batch_articles_for_full_text(batch_id: str) -> list[dict]:
+    """전문보기 target for exactly one clipping run, in the page's order.
+    Like get_batch_articles_for_kakao, it ignores any sent/copied history."""
+    data = get_briefing_for_run(batch_id)
+    return full_text_rows(data["selected"], data["reviewed"])
+
+
 def record_kakao_send(article_ids: list[str], status: str, error_message: str | None = None) -> None:
     _run(get_client().table("kakao_sends").insert({
         "sent_at": datetime.now(timezone.utc).isoformat(), "article_ids": article_ids,
