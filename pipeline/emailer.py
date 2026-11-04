@@ -46,7 +46,7 @@ def send_email(subject: str, html_body: str) -> bool:
                 server.login(settings.gmail_address, settings.gmail_app_password)
                 server.sendmail(settings.gmail_address, [settings.briefing_recipient], msg.as_string())
             return True
-        except smtplib.SMTPException as exc:
+        except OSError as exc:  # SMTPException is an OSError, as are timeouts and DNS failures
             logger.warning("email send failed (attempt %d/%d): %s", attempt, MAX_RETRIES, exc)
             if attempt < MAX_RETRIES:
                 time.sleep(delay)

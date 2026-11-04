@@ -65,6 +65,16 @@ def main() -> int:
                        reviewed_n=len(candidates), selected_n=0, error_message="scoring failed")
         return 1
 
+    # scorer.evaluate never raises - a failed batch just yields no evaluations -
+    # so a total failure (bad key, exhausted API credit) only shows up as an
+    # empty result. Fail the run here instead of emailing out "0 selected".
+    if candidates and not evaluations:
+        logger.error("no evaluations returned for %d candidates", len(candidates))
+        db.finish_run(run_id, status="failed", collected_n=len(collected),
+                       reviewed_n=len(candidates), selected_n=0,
+                       error_message=f"scoring failed: no evaluations for {len(candidates)} candidates")
+        return 1
+
     # apply the learned per-tag weight adjustments (the feedback loop)
     tag_weights = db.get_all_tag_weights()
     evaluations = weights.apply_weights(evaluations, tag_weights)
